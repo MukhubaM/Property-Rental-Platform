@@ -78,6 +78,9 @@ The repository separates the frontend and backend to support independent develop
 
 Additional source folders and configuration files will be added as development progresses.
 
+## ERD
+https://mermaid.ai/d/0c5aea50-44c2-427a-9ea2-34ab34ee3657
+
 ## Getting Started
 
 ### Prerequisites
