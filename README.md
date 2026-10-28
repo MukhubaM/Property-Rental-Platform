@@ -14,9 +14,12 @@ Property Rental Platform aims to simplify this process by providing one central 
 
 The platform is being developed as a collaborative, full-stack application with a focus on usability, maintainability, security, and future growth.
 
+> **Project status:** Development is ongoing. Features will be introduced progressively, so planned functionality should not be assumed to be available yet.
+
 ## Planned Features
 
 ### For Property Seekers
+
 - Browse available rental properties.
 - Search by province, city, and suburb.
 - Filter listings by rental price, property type, and facilities.
@@ -26,6 +29,7 @@ The platform is being developed as a collaborative, full-stack application with 
 - Report suspicious or misleading listings.
 
 ### For Property Owners
+
 - Create and manage property listings.
 - Upload property photographs.
 - Update rental prices and property details.
@@ -33,6 +37,7 @@ The platform is being developed as a collaborative, full-stack application with 
 - Receive and manage enquiries from interested tenants.
 
 ### Future Enhancements
+
 - Interactive maps and location-based property discovery.
 - Notifications for new listings and enquiry updates.
 - Student accommodation discovery.
@@ -43,19 +48,22 @@ The platform is being developed as a collaborative, full-stack application with 
 
 ## Technology Stack
 
-The project is being developed using the following technologies:
+The project currently uses the following technologies and tools:
 
 | Area | Technology |
 |---|---|
 | Frontend | Angular |
 | Frontend Workspace | Nx |
-| Backend | Java and Spring Boot |
+| Backend Language | Java |
+| Backend Framework | Spring Boot |
 | Database | PostgreSQL |
 | Database Migrations | Flyway |
+| Data Persistence | Spring Data JPA / Hibernate |
 | API Style | REST API |
+| Build Tool | Maven Wrapper |
 | Version Control | Git and GitHub |
 
-The technology stack may evolve as the project develops.
+The technology stack may evolve as the project develops. Refer to the relevant application configuration files for the exact versions in use.
 
 ## Repository Structure
 
@@ -65,7 +73,13 @@ Property-Rental-Platform/
 │   ├── frontend/
 │   │   └── README.md
 │   └── backend/
-│       └── README.md
+│       ├── README.md
+│       ├── pom.xml
+│       └── src/
+├── docs/
+│   ├── backend-onboarding.md
+│   ├── backend-architecture.md
+│   └── database-design.md
 ├── .gitignore
 └── README.md
 ```
@@ -73,19 +87,25 @@ Property-Rental-Platform/
 The repository separates the frontend and backend to support independent development while keeping the entire platform in one place.
 
 - **`app/frontend/`** - The user interface, application pages, and client-side functionality.
-- **`app/backend/`** - The REST API, business logic, data persistence, and backend services.
+- **`app/backend/`** - The REST API, business logic, database access, and backend functionality.
+- **`docs/`** - Additional technical documentation for developers.
 - **`README.md`** - The main project overview and entry point for contributors.
 
-Additional source folders and configuration files will be added as development progresses.
+The structure may expand as additional features and components are implemented.
 
-## ERD
-https://mermaid.ai/d/0c5aea50-44c2-427a-9ea2-34ab34ee3657
+## Database Design
+
+The database model describes the relationships between users, properties, rental units, locations, facilities, images, enquiries, favourites, and listing reports.
+
+Explore the [Property Rental Platform ERD](https://mermaid.ai/d/0c5aea50-44c2-427a-9ea2-34ab34ee3657).
+
+For more information, see the [Database Design Guide](docs/database-design.md).
 
 ## Getting Started
 
 ### Prerequisites
 
-Before contributing, install the tools required for the part of the project you want to work on.
+Install the tools required for the part of the project you want to work on.
 
 **General tools**
 - Git
@@ -93,12 +113,13 @@ Before contributing, install the tools required for the part of the project you 
 
 **Frontend**
 - Node.js and npm
-- Angular CLI / Nx tooling as required by the project
+- The tooling required by the Nx workspace
 
 **Backend**
-- Java Development Kit (JDK)
-- Maven
+- Java Development Kit (JDK) 24, matching the current Maven configuration
 - PostgreSQL
+
+The backend includes the Maven Wrapper, so a separate Maven installation is normally unnecessary.
 
 ### 1. Clone the Repository
 
@@ -107,29 +128,42 @@ git clone https://github.com/MukhubaM/Property-Rental-Platform.git
 cd Property-Rental-Platform
 ```
 
-### 2. Choose Your Application
+### 2. Set Up the Backend
 
-**Frontend**
-
-```bash
-cd app/frontend
-```
-
-See the [Frontend README](app/frontend/README.md) for frontend setup instructions.
-
-**Backend**
+Navigate to the backend directory:
 
 ```bash
 cd app/backend
 ```
 
-See the [Backend README](app/backend/README.md) for backend setup, database configuration, and development instructions.
+Follow the [Backend Onboarding Guide](docs/backend-onboarding.md) for instructions on:
 
-> Setup instructions will be expanded as the application components become available.
+- Creating the local PostgreSQL database.
+- Configuring your local database credentials.
+- Running Flyway migrations.
+- Starting the Spring Boot application.
+- Running tests and building the backend.
+
+### 3. Understand the Backend Architecture
+
+Contributors working on the backend should review these guides:
+
+- [Backend Architecture Guide](docs/backend-architecture.md) - explains the package structure, feature modules, and architecture layers.
+- [Database Design Guide](docs/database-design.md) - explains the database tables, relationships, and migration practices.
+
+### 4. Set Up the Frontend
+
+Navigate to the frontend directory from the repository root:
+
+```bash
+cd app/frontend
+```
+
+Follow the [Frontend README](app/frontend/README.md) for the current frontend setup and development instructions.
 
 ## Architecture and Development Principles
 
-The platform is intended to follow these principles:
+The platform follows these design principles:
 
 - **Separation of concerns:** Keep presentation, business logic, and data access responsibilities separate.
 - **Modular design:** Organise functionality into clear, maintainable feature areas.
@@ -139,19 +173,26 @@ The platform is intended to follow these principles:
 - **Scalability:** Build a reliable foundation that can evolve as the platform grows.
 - **Collaboration:** Use consistent Git practices and communicate changes clearly.
 
-The backend will initially follow a modular monolith architecture, keeping related features organised within one deployable application.
+The backend follows a **modular monolith architecture**, keeping related business features organised within one deployable Spring Boot application.
+
+Backend features are organised by business area, including identity, listings, locations, media, enquiries, and moderation. Within these areas, code can be separated into API, application, domain, and infrastructure layers.
+
+For more detail, see the [Backend Architecture Guide](docs/backend-architecture.md).
 
 ## Contributing
 
 Contributions and constructive feedback are welcome.
 
-To contribute:
+Before contributing:
 
-1. Fork the repository or coordinate with the project maintainers for direct access.
-2. Create a branch for your changes.
-3. Make focused changes that follow the project's existing conventions.
-4. Test your changes before submitting them.
-5. Open a pull request with a clear description of what you changed and why.
+1. Review the relevant README and technical documentation.
+2. Coordinate with the project maintainers if you need repository access.
+3. Create a branch for your changes.
+4. Keep changes focused and follow the project's existing conventions.
+5. Run relevant tests and check your changes.
+6. Open a pull request with a clear description of what changed and why.
+
+Follow the repository's configured branch and pull request rules. Do not assume that a change is approved or ready to merge until the required reviews and checks have passed.
 
 ### Suggested Branch Naming
 
@@ -168,24 +209,30 @@ docs/update-readme
 feat: add property search filters
 fix: validate rental listing details
 docs: update backend setup instructions
+test: add listing service tests
 ```
 
-Please keep changes focused and avoid committing passwords, API keys, database credentials, or other sensitive information.
+Please keep changes focused and never commit real passwords, API keys, database credentials, or other sensitive information.
 
 ## Development Roadmap
 
-- [ ] Establish the frontend and backend project structures.
-- [ ] Configure the backend and PostgreSQL database.
-- [ ] Define the initial database schema and API contracts.
+The roadmap tracks major project milestones and may change as development progresses.
+
+- [x] Establish the initial backend project structure.
+- [x] Configure PostgreSQL and Flyway migrations.
+- [x] Create the initial database schema and lookup data.
+- [x] Add initial backend architecture and database documentation.
+- [ ] Establish and document frontend onboarding.
+- [ ] Define and implement API contracts.
 - [ ] Implement user registration and authentication.
-- [ ] Implement property listing creation and management.
+- [ ] Implement property and rental-unit listing management.
 - [ ] Build property browsing, search, and filtering.
 - [ ] Add property images and owner enquiries.
 - [ ] Introduce favourites and listing reports.
-- [ ] Improve testing, security, and deployment.
-- [ ] Explore future enhancements based on user feedback.
+- [ ] Expand automated testing and security controls.
+- [ ] Prepare deployment and production configuration.
 
-Roadmap items may change as the project evolves.
+*Checklist items should be updated as the corresponding work is completed and verified in the repository.*
 
 ## Project Vision
 
