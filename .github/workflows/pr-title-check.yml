@@ -1,0 +1,27 @@
+
+name: PR Title Validation
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  validate-title:
+    name: Validate PR title
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check PR title convention
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if [[ "$PR_TITLE" =~ ^(feature|bugfix|hotfix|refactor|docs|test):[[:space:]].+ ]]; then
+            echo "PR title is valid: $PR_TITLE"
+          else
+            echo "::error::Invalid PR title: $PR_TITLE"
+            echo "Expected format: type: Description"
+            echo "Examples:"
+            echo "feature: Add GET endpoint to retrieve all roles"
+            echo "bugfix: Fix role not found exception"
+            exit 1
+          fi
