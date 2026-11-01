@@ -15,13 +15,12 @@ jobs:
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          TITLE="$(echo "$PR_TITLE" | sed 's/[[:space:]]*$//')"
+          TITLE="$(echo "$PR_TITLE" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
 
           if [[ "$TITLE" =~ ^(feature|bugfix|hotfix|refactor|docs|test):[[:space:]]+.+$ ]]; then
             echo "PR title is valid: $TITLE"
           else
             echo "::error::Invalid PR title: $TITLE"
             echo "Expected format: type: Description"
-            echo "Example: feature: Add GET endpoint to retrieve all roles"
             exit 1
           fi
