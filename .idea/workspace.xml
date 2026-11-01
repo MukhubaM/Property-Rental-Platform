@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="1fe8b12e-63f4-40f5-bad3-86745b582a01" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/Property-Rental-Platform/app/backend/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/Property-Rental-Platform/app/backend/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Property-Rental-Platform/app/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/Property-Rental-Platform/app/backend/src/main/resources/application.properties" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Record" />
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <favorite-branches>
+      <branch-storage>
+        <map>
+          <entry type="REMOTE">
+            <value>
+              <list>
+                <branch-info repo="$PROJECT_DIR$/Property-Rental-Platform" source="origin/Source" />
+              </list>
+            </value>
+          </entry>
+        </map>
+      </branch-storage>
+    </favorite-branches>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/Property-Rental-Platform" />
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="3LBMfKNSc8cOskz7kEa4YwNKq4n" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.PlatformApplication.executor": "Run",
+    "JUnit.RoleServiceTest.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/mrmuk/Desktop/CodingWithCuba/Property-Rental-Platform",
+    "settings.editor.selected.configurable": "vcs.Git"
+  }
+}]]></component>
+  <component name="RunManager" selected="JUnit.RoleServiceTest.returnsRoleWhenFound">
+    <configuration name="PlatformApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="propertyrental.platform.PlatformApplication" />
+      <module name="platform" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="propertyrental.platform.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RoleServiceTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="platform" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="propertyrental.platform.identity.application.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="propertyrental.platform.identity.application" />
+      <option name="MAIN_CLASS_NAME" value="propertyrental.platform.identity.application.RoleServiceTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RoleServiceTest.returnsRoleWhenFound" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="platform" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="propertyrental.platform.identity.application.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="propertyrental.platform.identity.application" />
+      <option name="MAIN_CLASS_NAME" value="propertyrental.platform.identity.application.RoleServiceTest" />
+      <option name="METHOD_NAME" value="returnsRoleWhenFound" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.RoleServiceTest.returnsRoleWhenFound" />
+        <item itemvalue="JUnit.RoleServiceTest" />
+        <item itemvalue="Application.PlatformApplication" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="jdk-17.0.10-corretto-17.0.10-4caba194b151-5cd809f4" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="1fe8b12e-63f4-40f5-bad3-86745b582a01" name="Changes" comment="" />
+      <created>1792923112383</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1792923112383</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
