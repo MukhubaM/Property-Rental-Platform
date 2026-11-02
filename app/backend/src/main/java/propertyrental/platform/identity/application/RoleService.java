@@ -6,6 +6,8 @@ import propertyrental.platform.identity.domain.RoleEntity;
 import propertyrental.platform.identity.domain.RoleNotFoundException;
 import propertyrental.platform.identity.infrastructure.RoleRepository;
 
+import java.util.List;
+
 @Service
 public class RoleService {
 
@@ -13,6 +15,13 @@ public class RoleService {
 
     public RoleService(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<RoleEntity> getAll() {
+
+        return roleRepository.findAll();
     }
 
     @Transactional(readOnly = true)
