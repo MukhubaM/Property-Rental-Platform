@@ -5,4 +5,8 @@ import org.springframework.stereotype.Repository;
 import propertyrental.platform.identity.infrastructure.persistence.entity.RoleEntity;
 
 @Repository
-public interface RoleRepository extends JpaRepository<RoleEntity,Long> {}
+public interface RoleRepository extends JpaRepository<RoleEntity,Long> {
+
+    boolean existsByCodeAndIdNot(String code, Long id);
+    boolean existsByNameAndIdNot(String name, Long id);
+}
