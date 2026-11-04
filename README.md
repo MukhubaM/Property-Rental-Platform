@@ -1,18 +1,18 @@
 # Property Rental Platform 🇿🇦
 
-**A simple, accessible, and free way to discover and list rental properties across South Africa.**
+**A simple, accessible and free way to discover and list rental properties across South Africa.**
 
-Property Rental Platform is a collaborative software project designed to connect property owners with people looking for rental accommodation. It aims to make finding a place to rent easier by allowing users to explore available properties, compare options, and contact property owners through one platform.
+Property Rental Platform is a collaborative software project designed to connect property owners with people looking for rental accommodation. It aims to make finding a place to rent easier by allowing users to explore available properties, compare options and contact property owners through one platform.
 
-Our goal is to make property discovery more accessible, transparent, and convenient for South Africans.
+Our goal is to make property discovery more accessible, transparent and convenient for South Africans.
 
 ## About the Project
 
-Finding suitable rental accommodation can be challenging. Property seekers often need to search across different platforms, compare prices manually, and contact multiple property owners to find a place that meets their needs.
+Finding suitable rental accommodation can be challenging. Property seekers often need to search across different platforms, compare prices manually and contact multiple property owners to find a place that meets their needs.
 
 Property Rental Platform aims to simplify this process by providing one central place where property owners can publish rental listings and tenants can search for accommodation that suits their budgets and preferences.
 
-The platform is being developed as a collaborative, full-stack application with a focus on usability, maintainability, security, and future growth.
+The platform is being developed as a collaborative, full-stack application with a focus on usability, maintainability, security and future growth.
 
 > **Project status:** Development is ongoing. Features will be introduced progressively, so planned functionality should not be assumed to be available yet.
 
@@ -21,9 +21,9 @@ The platform is being developed as a collaborative, full-stack application with 
 ### For Property Seekers
 
 - Browse available rental properties.
-- Search by province, city, and suburb.
-- Filter listings by rental price, property type, and facilities.
-- View property descriptions, photographs, and rental details.
+- Search by province, city and suburb.
+- Filter listings by rental price, property type and facilities.
+- View property descriptions, photographs and rental details.
 - Contact property owners about available properties.
 - Save favourite listings for later.
 - Report suspicious or misleading listings.
@@ -86,8 +86,8 @@ Property-Rental-Platform/
 
 The repository separates the frontend and backend to support independent development while keeping the entire platform in one place.
 
-- **`app/frontend/`** - The user interface, application pages, and client-side functionality.
-- **`app/backend/`** - The REST API, business logic, database access, and backend functionality.
+- **`app/frontend/`** - The user interface, application pages and client-side functionality.
+- **`app/backend/`** - The REST API, business logic, database access and backend functionality.
 - **`docs/`** - Additional technical documentation for developers.
 - **`README.md`** - The main project overview and entry point for contributors.
 
@@ -95,7 +95,7 @@ The structure may expand as additional features and components are implemented.
 
 ## Database Design
 
-The database model describes the relationships between users, properties, rental units, locations, facilities, images, enquiries, favourites, and listing reports.
+The database model describes the relationships between users, properties, rental units, locations, facilities, images, enquiries, favourites and listing reports.
 
 Explore the [Property Rental Platform ERD](https://mermaid.ai/d/0c5aea50-44c2-427a-9ea2-34ab34ee3657).
 
@@ -148,8 +148,8 @@ Follow the [Backend Onboarding Guide](docs/backend-onboarding.md) for instructio
 
 Contributors working on the backend should review these guides:
 
-- [Backend Architecture Guide](docs/backend-architecture.md) - explains the package structure, feature modules, and architecture layers.
-- [Database Design Guide](docs/database-design.md) - explains the database tables, relationships, and migration practices.
+- [Backend Architecture Guide](docs/backend-architecture.md) - explains the package structure, feature modules and architecture layers.
+- [Database Design Guide](docs/database-design.md) - explains the database tables, relationships and migration practices.
 
 ### 4. Set Up the Frontend
 
@@ -165,7 +165,7 @@ Follow the [Frontend README](app/frontend/README.md) for the current frontend se
 
 The platform follows these design principles:
 
-- **Separation of concerns:** Keep presentation, business logic, and data access responsibilities separate.
+- **Separation of concerns:** Keep presentation, business logic and data access responsibilities separate.
 - **Modular design:** Organise functionality into clear, maintainable feature areas.
 - **API-first integration:** Connect the frontend and backend through clearly defined REST API contracts.
 - **Security by design:** Protect user information and validate incoming requests.
@@ -175,7 +175,7 @@ The platform follows these design principles:
 
 The backend follows a **modular monolith architecture**, keeping related business features organised within one deployable Spring Boot application.
 
-Backend features are organised by business area, including identity, listings, locations, media, enquiries, and moderation. Within these areas, code can be separated into API, application, domain, and infrastructure layers.
+Backend features are organised by business area, including identity, listings, locations, media, enquiries and moderation. Within these areas, code can be separated into API, application, domain and infrastructure layers.
 
 For more detail, see the [Backend Architecture Guide](docs/backend-architecture.md).
 
@@ -212,7 +212,7 @@ docs: update backend setup instructions
 test: add listing service tests
 ```
 
-Please keep changes focused and never commit real passwords, API keys, database credentials, or other sensitive information.
+Please keep changes focused and never commit real passwords, API keys, database credentials or other sensitive information.
 
 ## Development Roadmap
 
@@ -226,7 +226,7 @@ The roadmap tracks major project milestones and may change as development progre
 - [ ] Define and implement API contracts.
 - [ ] Implement user registration and authentication.
 - [ ] Implement property and rental-unit listing management.
-- [ ] Build property browsing, search, and filtering.
+- [ ] Build property browsing, search and filtering.
 - [ ] Add property images and owner enquiries.
 - [ ] Introduce favourites and listing reports.
 - [ ] Expand automated testing and security controls.
@@ -238,7 +238,7 @@ The roadmap tracks major project milestones and may change as development progre
 
 We want to build more than a property listing website. We want to create a practical platform that helps people find suitable accommodation while giving property owners a straightforward way to reach potential tenants.
 
-By keeping the platform accessible, maintaining a clean technical foundation, and developing around real user needs, we aim to build something useful for communities across South Africa.
+By keeping the platform accessible, maintaining a clean technical foundation and developing around real user needs, we aim to build something useful for communities across South Africa.
 
 ## License
 
