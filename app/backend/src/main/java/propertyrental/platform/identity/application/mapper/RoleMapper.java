@@ -18,14 +18,9 @@ public class RoleMapper {
         return role;
     }
 
-    public RoleEntity toEntity(UpdateRoleRequest request){
-        RoleEntity role = new RoleEntity();
-
-        role.setId(request.id());
+    public void updateEntity(RoleEntity role, UpdateRoleRequest request){
         role.setCode(request.code());
         role.setName(request.name());
-
-        return role;
     }
 
     public RoleResponse toResponse(RoleEntity role) {
