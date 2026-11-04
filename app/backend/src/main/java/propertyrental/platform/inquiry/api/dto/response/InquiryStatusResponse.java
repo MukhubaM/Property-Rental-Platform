@@ -1,2 +1,7 @@
-package propertyrental.platform.inquiry.api.dto.response;public record InquiryStatusResponse() {
-}
+package propertyrental.platform.inquiry.api.dto.response;
+
+public record InquiryStatusResponse(
+        Long id,
+        String code,
+        String name
+) {}
