@@ -8,8 +8,9 @@ import propertyrental.platform.inquiry.infrastructure.persistence.entity.Inquiry
 @Component
 public class InquiryStatusMapper {
 
-    // Convert an entity to the response DTO, so the entity is never exposed
+    // Convert an entity to the response DTO so that the entity is never exposed
     public InquiryStatusResponse toResponse(InquiryStatusEntity status) {
+
         return new InquiryStatusResponse(
                 status.getId(),
                 status.getCode(),
