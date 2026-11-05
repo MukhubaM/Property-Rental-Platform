@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import propertyrental.platform.listing.api.dto.response.PropertyTypeResponse;
 import propertyrental.platform.listing.application.service.PropertyTypeService;
@@ -22,5 +23,12 @@ public class PropertyTypeController {
     public List<PropertyTypeResponse> getAllPropertyTypes() {
 
         return propertyTypeService.getAllPropertyTypes();
+    }
+
+
+    @GetMapping("/{id}")
+    public PropertyTypeResponse getPropertyTypeById(@PathVariable("id") Long id) {
+
+        return propertyTypeService.getPropertyTypeById(id);
     }
 }

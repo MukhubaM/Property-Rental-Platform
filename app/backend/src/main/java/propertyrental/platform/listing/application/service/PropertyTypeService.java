@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import propertyrental.platform.listing.api.dto.response.PropertyTypeResponse;
 import propertyrental.platform.listing.application.mapper.PropertyTypeMapper;
 import propertyrental.platform.listing.infrastructure.persistence.repository.PropertyTypeRepository;
+import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -25,5 +26,14 @@ public class PropertyTypeService {
         return propertyTypeRepository.findAll().stream()
                 .map(propertyTypeMapper::toResponse)
                 .toList();
+    }
+
+    // This return the property type or fail with 404 if the id doesn't exist
+    @Transactional
+    public PropertyTypeResponse getPropertyTypeById(Long id) {
+
+        return propertyTypeRepository.findById(id)
+                .map(propertyTypeMapper::toResponse)
+                .orElseThrow(() -> new PropertyTypeNotFoundException(id));
     }
 }
