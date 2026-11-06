@@ -35,12 +35,11 @@ public class PropertyTypeController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public PropertyTypeResponse createPropertyType(@Valid @RequestBody CreatePropertyTypeRequest request) {
-
         return propertyTypeService.createPropertyType(request);
+    }
 
     @GetMapping("/{id}")
     public PropertyTypeResponse getPropertyTypeById(@PathVariable("id") Long id) {
-
         return propertyTypeService.getPropertyTypeById(id);
     }
 }

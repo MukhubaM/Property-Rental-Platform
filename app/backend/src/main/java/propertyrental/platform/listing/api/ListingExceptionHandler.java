@@ -76,6 +76,9 @@ public class ListingExceptionHandler {
     public ProblemDetail handlePropertyTypeAlreadyExists(PropertyTypeAlreadyExistsException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Property type already exists");
+        return problem;
+    }
+
     // 404 (if the requested property type id doesn't exist)
     @ExceptionHandler(PropertyTypeNotFoundException.class)
     public ProblemDetail handlePropertyTypeNotFound(PropertyTypeNotFoundException ex) {
