@@ -2,15 +2,18 @@ package propertyrental.platform.listing.api;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 import propertyrental.platform.listing.domain.ListingStatusAlreadyExistsException;
 import propertyrental.platform.listing.domain.ListingStatusInUseException;
 import propertyrental.platform.listing.domain.ListingStatusNotFoundException;
+import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
 
 @RestControllerAdvice(basePackageClasses = ListingExceptionHandler.class)
 public class ListingExceptionHandler {
@@ -63,6 +66,15 @@ public class ListingExceptionHandler {
                 HttpStatus.BAD_REQUEST, "Request validation failed");
         problem.setTitle("Invalid request");
         problem.setProperty("errors", errors);
+
+        return problem;
+    }
+
+    // 404 (if the requested property type id doesn't exist)
+    @ExceptionHandler(PropertyTypeNotFoundException.class)
+    public ProblemDetail handlePropertyTypeNotFound(PropertyTypeNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Property type not found");
 
         return problem;
     }
