@@ -2,15 +2,18 @@ package propertyrental.platform.listing.api;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 import propertyrental.platform.listing.domain.ListingStatusAlreadyExistsException;
 import propertyrental.platform.listing.domain.ListingStatusInUseException;
 import propertyrental.platform.listing.domain.ListingStatusNotFoundException;
+import propertyrental.platform.listing.domain.PropertyTypeAlreadyExistsException;
 
 @RestControllerAdvice(basePackageClasses = ListingExceptionHandler.class)
 public class ListingExceptionHandler {
@@ -46,8 +49,8 @@ public class ListingExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                HttpStatus.CONFLICT, "A listing status with this code or name already exists");
-        problem.setTitle("Listing status already exists");
+                HttpStatus.CONFLICT,  "A record with this code or name already exists");
+        problem.setTitle("Duplicate record");
 
         return problem;
     }
@@ -63,6 +66,15 @@ public class ListingExceptionHandler {
                 HttpStatus.BAD_REQUEST, "Request validation failed");
         problem.setTitle("Invalid request");
         problem.setProperty("errors", errors);
+
+        return problem;
+    }
+
+    // 409 (if another property type already uses this code or name)
+    @ExceptionHandler(PropertyTypeAlreadyExistsException.class)
+    public ProblemDetail handlePropertyTypeAlreadyExists(PropertyTypeAlreadyExistsException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Property type already exists");
 
         return problem;
     }
