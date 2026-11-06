@@ -10,6 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import propertyrental.platform.listing.api.dto.response.PropertyTypeResponse;
 import propertyrental.platform.listing.application.mapper.PropertyTypeMapper;
 import propertyrental.platform.listing.infrastructure.persistence.repository.PropertyTypeRepository;
+import propertyrental.platform.listing.api.dto.request.CreatePropertyTypeRequest;
+import propertyrental.platform.listing.domain.PropertyTypeAlreadyExistsException;
+import propertyrental.platform.listing.infrastructure.persistence.entity.PropertyTypeEntity;
 import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
 
 @Service
@@ -28,6 +31,20 @@ public class PropertyTypeService {
                 .toList();
     }
 
+    @Transactional
+    public PropertyTypeResponse createPropertyType(CreatePropertyTypeRequest request) {
+
+        // This reject the request (409) if the code or name is already taken
+        if (propertyTypeRepository.existsByCode(request.code())) {
+            throw new PropertyTypeAlreadyExistsException("code", request.code());
+        }
+        if (propertyTypeRepository.existsByName(request.name())) {
+            throw new PropertyTypeAlreadyExistsException("name", request.name());
+        }
+
+        PropertyTypeEntity saved = propertyTypeRepository.save(propertyTypeMapper.toEntity(request));
+
+        return propertyTypeMapper.toResponse(saved);
     // This return the property type or fail with 404 if the id doesn't exist
     @Transactional
     public PropertyTypeResponse getPropertyTypeById(Long id) {

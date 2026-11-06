@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import propertyrental.platform.listing.domain.ListingStatusAlreadyExistsException;
 import propertyrental.platform.listing.domain.ListingStatusInUseException;
 import propertyrental.platform.listing.domain.ListingStatusNotFoundException;
+import propertyrental.platform.listing.domain.PropertyTypeAlreadyExistsException;
 import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
 
 @RestControllerAdvice(basePackageClasses = ListingExceptionHandler.class)
@@ -49,8 +50,8 @@ public class ListingExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                HttpStatus.CONFLICT, "A listing status with this code or name already exists");
-        problem.setTitle("Listing status already exists");
+                HttpStatus.CONFLICT,  "A record with this code or name already exists");
+        problem.setTitle("Duplicate record");
 
         return problem;
     }
@@ -70,6 +71,11 @@ public class ListingExceptionHandler {
         return problem;
     }
 
+    // 409 (if another property type already uses this code or name)
+    @ExceptionHandler(PropertyTypeAlreadyExistsException.class)
+    public ProblemDetail handlePropertyTypeAlreadyExists(PropertyTypeAlreadyExistsException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Property type already exists");
     // 404 (if the requested property type id doesn't exist)
     @ExceptionHandler(PropertyTypeNotFoundException.class)
     public ProblemDetail handlePropertyTypeNotFound(PropertyTypeNotFoundException ex) {
