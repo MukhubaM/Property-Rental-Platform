@@ -24,6 +24,7 @@ import propertyrental.platform.listing.api.dto.request.CreatePropertyTypeRequest
 import propertyrental.platform.listing.api.dto.response.PropertyTypeResponse;
 import propertyrental.platform.listing.application.service.PropertyTypeService;
 import propertyrental.platform.listing.domain.PropertyTypeAlreadyExistsException;
+import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
 
 @WebMvcTest(PropertyTypeController.class)
 class PropertyTypeControllerTest {
@@ -110,5 +111,32 @@ class PropertyTypeControllerTest {
                         .content(VALID_BODY))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("Property type already exists"));
+    // ---- get by id ----
+    @Test
+    void getByIdReturns200WhenFound() throws Exception {
+        when(propertyTypeService.getPropertyTypeById(1L))
+                .thenReturn(new PropertyTypeResponse(1L, "HOUSE", "House"));
+
+        mockMvc.perform(get("/api/v1/property-types/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.code").value("HOUSE"))
+                .andExpect(jsonPath("$.name").value("House"));
+    }
+
+    @Test
+    void getByIdReturns404WhenNotFound() throws Exception {
+        when(propertyTypeService.getPropertyTypeById(99L))
+                .thenThrow(new PropertyTypeNotFoundException(99L));
+
+        mockMvc.perform(get("/api/v1/property-types/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Property type not found"));
+    }
+
+    @Test
+    void getByIdReturns400WhenIdIsNotANumber() throws Exception {
+        mockMvc.perform(get("/api/v1/property-types/abc"))
+                .andExpect(status().isBadRequest());
     }
 }

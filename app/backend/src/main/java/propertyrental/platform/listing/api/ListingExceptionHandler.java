@@ -14,6 +14,7 @@ import propertyrental.platform.listing.domain.ListingStatusAlreadyExistsExceptio
 import propertyrental.platform.listing.domain.ListingStatusInUseException;
 import propertyrental.platform.listing.domain.ListingStatusNotFoundException;
 import propertyrental.platform.listing.domain.PropertyTypeAlreadyExistsException;
+import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
 
 @RestControllerAdvice(basePackageClasses = ListingExceptionHandler.class)
 public class ListingExceptionHandler {
@@ -75,6 +76,11 @@ public class ListingExceptionHandler {
     public ProblemDetail handlePropertyTypeAlreadyExists(PropertyTypeAlreadyExistsException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Property type already exists");
+    // 404 (if the requested property type id doesn't exist)
+    @ExceptionHandler(PropertyTypeNotFoundException.class)
+    public ProblemDetail handlePropertyTypeNotFound(PropertyTypeNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Property type not found");
 
         return problem;
     }

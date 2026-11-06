@@ -13,6 +13,7 @@ import propertyrental.platform.listing.infrastructure.persistence.repository.Pro
 import propertyrental.platform.listing.api.dto.request.CreatePropertyTypeRequest;
 import propertyrental.platform.listing.domain.PropertyTypeAlreadyExistsException;
 import propertyrental.platform.listing.infrastructure.persistence.entity.PropertyTypeEntity;
+import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -44,5 +45,12 @@ public class PropertyTypeService {
         PropertyTypeEntity saved = propertyTypeRepository.save(propertyTypeMapper.toEntity(request));
 
         return propertyTypeMapper.toResponse(saved);
+    // This return the property type or fail with 404 if the id doesn't exist
+    @Transactional
+    public PropertyTypeResponse getPropertyTypeById(Long id) {
+
+        return propertyTypeRepository.findById(id)
+                .map(propertyTypeMapper::toResponse)
+                .orElseThrow(() -> new PropertyTypeNotFoundException(id));
     }
 }

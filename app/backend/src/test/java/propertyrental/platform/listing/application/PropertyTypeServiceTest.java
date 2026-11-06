@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +18,7 @@ import propertyrental.platform.listing.api.dto.response.PropertyTypeResponse;
 import propertyrental.platform.listing.application.mapper.PropertyTypeMapper;
 import propertyrental.platform.listing.application.service.PropertyTypeService;
 import propertyrental.platform.listing.domain.PropertyTypeAlreadyExistsException;
+import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
 import propertyrental.platform.listing.infrastructure.persistence.entity.PropertyTypeEntity;
 import propertyrental.platform.listing.infrastructure.persistence.repository.PropertyTypeRepository;
 
@@ -86,5 +88,21 @@ class PropertyTypeServiceTest {
                 .isInstanceOf(PropertyTypeAlreadyExistsException.class)
                 .hasMessageContaining("name");
         verify(repository, never()).save(any());
+    // ---- get by id ----
+    @Test
+    void getByIdReturnsPropertyTypeWhenFound() {
+        when(repository.findById(1L)).thenReturn(Optional.of(propertyType(1L, "HOUSE", "House")));
+
+        assertThat(service.getPropertyTypeById(1L))
+                .isEqualTo(new PropertyTypeResponse(1L, "HOUSE", "House"));
+    }
+
+    @Test
+    void getByIdThrowsWhenNotFound() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.getPropertyTypeById(99L))
+                .isInstanceOf(PropertyTypeNotFoundException.class)
+                .hasMessageContaining("99");
     }
 }

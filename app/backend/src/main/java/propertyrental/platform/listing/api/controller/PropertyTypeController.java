@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import propertyrental.platform.listing.api.dto.response.PropertyTypeResponse;
 import propertyrental.platform.listing.application.service.PropertyTypeService;
@@ -36,5 +37,10 @@ public class PropertyTypeController {
     public PropertyTypeResponse createPropertyType(@Valid @RequestBody CreatePropertyTypeRequest request) {
 
         return propertyTypeService.createPropertyType(request);
+
+    @GetMapping("/{id}")
+    public PropertyTypeResponse getPropertyTypeById(@PathVariable("id") Long id) {
+
+        return propertyTypeService.getPropertyTypeById(id);
     }
 }
