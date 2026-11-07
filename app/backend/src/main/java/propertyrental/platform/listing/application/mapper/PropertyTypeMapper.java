@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import propertyrental.platform.listing.api.dto.response.PropertyTypeResponse;
 import propertyrental.platform.listing.infrastructure.persistence.entity.PropertyTypeEntity;
 import propertyrental.platform.listing.api.dto.request.CreatePropertyTypeRequest;
+import propertyrental.platform.listing.api.dto.request.UpdatePropertyTypeRequest;
 
 @Component
 public class PropertyTypeMapper {
@@ -16,6 +17,12 @@ public class PropertyTypeMapper {
         propertyType.setName(request.name());
 
         return propertyType;
+    }
+
+    // This applies an update request to an existing entity in place
+    public void updateEntity(PropertyTypeEntity propertyType, UpdatePropertyTypeRequest request) {
+        propertyType.setCode(request.code());
+        propertyType.setName(request.name());
     }
 
     // This convert an entity to the response DTO so that the entity is never exposed
