@@ -3,6 +3,8 @@ package propertyrental.platform.listing.api;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -24,6 +26,8 @@ import propertyrental.platform.listing.api.dto.request.CreatePropertyTypeRequest
 import propertyrental.platform.listing.api.dto.response.PropertyTypeResponse;
 import propertyrental.platform.listing.application.service.PropertyTypeService;
 import propertyrental.platform.listing.domain.PropertyTypeAlreadyExistsException;
+import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
+import propertyrental.platform.listing.domain.PropertyTypeInUseException;
 import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
 
 @WebMvcTest(PropertyTypeController.class)
@@ -139,5 +143,33 @@ class PropertyTypeControllerTest {
     void getByIdReturns400WhenIdIsNotANumber() throws Exception {
         mockMvc.perform(get("/api/v1/property-types/abc"))
                 .andExpect(status().isBadRequest());
+    }
+
+    // ---- delete ----
+    @Test
+    void deleteReturns204WithNoBody() throws Exception {
+        mockMvc.perform(delete("/api/v1/property-types/8"))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    void deleteReturns404WhenNotFound() throws Exception {
+        doThrow(new PropertyTypeNotFoundException(99L))
+                .when(propertyTypeService).deletePropertyType(99L);
+
+        mockMvc.perform(delete("/api/v1/property-types/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Property type not found"));
+    }
+
+    @Test
+    void deleteReturns409WhenPropertyTypeIsInUse() throws Exception {
+        doThrow(new PropertyTypeInUseException(1L))
+                .when(propertyTypeService).deletePropertyType(1L);
+
+        mockMvc.perform(delete("/api/v1/property-types/1"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Property type in use"));
     }
 }

@@ -15,6 +15,7 @@ import propertyrental.platform.listing.domain.ListingStatusInUseException;
 import propertyrental.platform.listing.domain.ListingStatusNotFoundException;
 import propertyrental.platform.listing.domain.PropertyTypeAlreadyExistsException;
 import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
+import propertyrental.platform.listing.domain.PropertyTypeInUseException;
 
 @RestControllerAdvice(basePackageClasses = ListingExceptionHandler.class)
 public class ListingExceptionHandler {
@@ -85,6 +86,15 @@ public class ListingExceptionHandler {
     public ProblemDetail handlePropertyTypeNotFound(PropertyTypeNotFoundException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setTitle("Property type not found");
+
+        return problem;
+    }
+
+    // 409 (if the property type is still used by properties, it can't be deleted)
+    @ExceptionHandler(PropertyTypeInUseException.class)
+    public ProblemDetail handlePropertyTypeInUse(PropertyTypeInUseException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Property type in use");
 
         return problem;
     }

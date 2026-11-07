@@ -7,6 +7,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +27,8 @@ import propertyrental.platform.listing.domain.PropertyTypeAlreadyExistsException
 import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
 import propertyrental.platform.listing.infrastructure.persistence.entity.PropertyTypeEntity;
 import propertyrental.platform.listing.infrastructure.persistence.repository.PropertyTypeRepository;
+import propertyrental.platform.listing.domain.PropertyTypeInUseException;
+import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
 
 class PropertyTypeServiceTest {
 
@@ -105,5 +113,37 @@ class PropertyTypeServiceTest {
         assertThatThrownBy(() -> service.getPropertyTypeById(99L))
                 .isInstanceOf(PropertyTypeNotFoundException.class)
                 .hasMessageContaining("99");
+    }
+
+    // ---- delete ----
+    @Test
+    void deleteRemovesExistingPropertyType() {
+        PropertyTypeEntity entity = propertyType(8L, "TEMP", "Temp Type");
+        when(repository.findById(8L)).thenReturn(Optional.of(entity));
+
+        service.deletePropertyType(8L);
+
+        verify(repository).delete(entity);
+    }
+
+    @Test
+    void deleteThrowsWhenNotFound() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.deletePropertyType(99L))
+                .isInstanceOf(PropertyTypeNotFoundException.class)
+                .hasMessageContaining("99");
+        verify(repository, never()).delete(any());
+    }
+
+    @Test
+    void deleteThrowsWhenPropertyTypeIsStillUsedByProperties() {
+        when(repository.findById(1L)).thenReturn(Optional.of(propertyType(1L, "HOUSE", "House")));
+        doThrow(new DataIntegrityViolationException("fk_properties_type"))
+                .when(repository).flush();
+
+        assertThatThrownBy(() -> service.deletePropertyType(1L))
+                .isInstanceOf(PropertyTypeInUseException.class)
+                .hasMessageContaining("1");
     }
 }
