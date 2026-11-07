@@ -15,6 +15,8 @@ import propertyrental.platform.listing.domain.PropertyTypeAlreadyExistsException
 import propertyrental.platform.listing.infrastructure.persistence.entity.PropertyTypeEntity;
 import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
 
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
+
 @Service
 @RequiredArgsConstructor
 public class PropertyTypeService {
@@ -45,6 +47,7 @@ public class PropertyTypeService {
         PropertyTypeEntity saved = propertyTypeRepository.save(propertyTypeMapper.toEntity(request));
 
         return propertyTypeMapper.toResponse(saved);
+    }
     // This return the property type or fail with 404 if the id doesn't exist
     @Transactional
     public PropertyTypeResponse getPropertyTypeById(Long id) {

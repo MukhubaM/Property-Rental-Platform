@@ -37,6 +37,7 @@ public class PropertyTypeController {
     public PropertyTypeResponse createPropertyType(@Valid @RequestBody CreatePropertyTypeRequest request) {
 
         return propertyTypeService.createPropertyType(request);
+        }
 
     @GetMapping("/{id}")
     public PropertyTypeResponse getPropertyTypeById(@PathVariable("id") Long id) {
