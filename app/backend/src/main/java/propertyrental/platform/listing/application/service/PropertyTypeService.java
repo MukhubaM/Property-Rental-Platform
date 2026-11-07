@@ -16,6 +16,7 @@ import propertyrental.platform.listing.domain.PropertyTypeAlreadyExistsException
 import propertyrental.platform.listing.infrastructure.persistence.entity.PropertyTypeEntity;
 import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
 import propertyrental.platform.listing.domain.PropertyTypeInUseException;
+import propertyrental.platform.listing.api.dto.request.UpdatePropertyTypeRequest;
 
 import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
@@ -50,6 +51,7 @@ public class PropertyTypeService {
 
         return propertyTypeMapper.toResponse(saved);
     }
+
     // This return the property type or fail with 404 if the id doesn't exist
     @Transactional
     public PropertyTypeResponse getPropertyTypeById(Long id) {
@@ -72,5 +74,23 @@ public class PropertyTypeService {
         } catch (DataIntegrityViolationException ex) {
             throw new PropertyTypeInUseException(id);
         }
+    public PropertyTypeResponse updatePropertyType(Long id, UpdatePropertyTypeRequest request) {
+
+        // Load the property type to update or fail with 404 if the id doesn't exist
+        PropertyTypeEntity propertyType = propertyTypeRepository.findById(id)
+                .orElseThrow(() -> new PropertyTypeNotFoundException(id));
+
+        // Reject the update (409) if a different property type already uses this code or name
+        if (propertyTypeRepository.existsByCodeAndIdNot(request.code(), id)) {
+            throw new PropertyTypeAlreadyExistsException("code", request.code());
+        }
+        if (propertyTypeRepository.existsByNameAndIdNot(request.name(), id)) {
+            throw new PropertyTypeAlreadyExistsException("name", request.name());
+        }
+
+        // Apply the new values to the existing entity and save it
+        propertyTypeMapper.updateEntity(propertyType, request);
+
+        return propertyTypeMapper.toResponse(propertyTypeRepository.save(propertyType));
     }
 }
