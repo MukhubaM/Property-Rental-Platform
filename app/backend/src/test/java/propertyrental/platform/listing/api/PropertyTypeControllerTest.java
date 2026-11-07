@@ -111,6 +111,7 @@ class PropertyTypeControllerTest {
                         .content(VALID_BODY))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("Property type already exists"));
+    }
     // ---- get by id ----
     @Test
     void getByIdReturns200WhenFound() throws Exception {

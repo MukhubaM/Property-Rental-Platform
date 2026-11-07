@@ -88,6 +88,7 @@ class PropertyTypeServiceTest {
                 .isInstanceOf(PropertyTypeAlreadyExistsException.class)
                 .hasMessageContaining("name");
         verify(repository, never()).save(any());
+    }
     // ---- get by id ----
     @Test
     void getByIdReturnsPropertyTypeWhenFound() {
