@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import propertyrental.platform.listing.api.dto.response.PropertyTypeResponse;
 import propertyrental.platform.listing.application.mapper.PropertyTypeMapper;
@@ -14,6 +15,7 @@ import propertyrental.platform.listing.api.dto.request.CreatePropertyTypeRequest
 import propertyrental.platform.listing.domain.PropertyTypeAlreadyExistsException;
 import propertyrental.platform.listing.infrastructure.persistence.entity.PropertyTypeEntity;
 import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
+import propertyrental.platform.listing.domain.PropertyTypeInUseException;
 import propertyrental.platform.listing.api.dto.request.UpdatePropertyTypeRequest;
 
 import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
@@ -60,6 +62,18 @@ public class PropertyTypeService {
     }
 
     @Transactional
+    public void deletePropertyType(Long id) {
+
+        // This load the property type to delete or fail with 404 if the id doesn't exist
+        PropertyTypeEntity propertyType = propertyTypeRepository.findById(id)
+                .orElseThrow(() -> new PropertyTypeNotFoundException(id));
+
+        try {
+            propertyTypeRepository.delete(propertyType);
+            propertyTypeRepository.flush();
+        } catch (DataIntegrityViolationException ex) {
+            throw new PropertyTypeInUseException(id);
+        }
     public PropertyTypeResponse updatePropertyType(Long id, UpdatePropertyTypeRequest request) {
 
         // Load the property type to update or fail with 404 if the id doesn't exist
