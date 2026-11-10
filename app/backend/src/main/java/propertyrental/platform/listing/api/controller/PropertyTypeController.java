@@ -54,6 +54,7 @@ public class PropertyTypeController {
     @PutMapping("/{id}")
     public PropertyTypeResponse updatePropertyType(@PathVariable("id") Long id,
                                                    @Valid @RequestBody UpdatePropertyTypeRequest request) {
+
         return propertyTypeService.updatePropertyType(id, request);
     }
 }
