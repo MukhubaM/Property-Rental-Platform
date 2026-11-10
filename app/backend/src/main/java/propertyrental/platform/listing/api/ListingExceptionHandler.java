@@ -16,6 +16,9 @@ import propertyrental.platform.listing.domain.ListingStatusNotFoundException;
 import propertyrental.platform.listing.domain.PropertyTypeAlreadyExistsException;
 import propertyrental.platform.listing.domain.PropertyTypeNotFoundException;
 import propertyrental.platform.listing.domain.PropertyTypeInUseException;
+import propertyrental.platform.listing.domain.UnitTypeAlreadyExistsException;
+import propertyrental.platform.listing.domain.UnitTypeInUseException;
+import propertyrental.platform.listing.domain.UnitTypeNotFoundException;
 
 @RestControllerAdvice(basePackageClasses = ListingExceptionHandler.class)
 public class ListingExceptionHandler {
@@ -95,6 +98,33 @@ public class ListingExceptionHandler {
     public ProblemDetail handlePropertyTypeInUse(PropertyTypeInUseException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Property type in use");
+
+        return problem;
+    }
+
+    // 404 (if the requested unit type id doesn't exist)
+    @ExceptionHandler(UnitTypeNotFoundException.class)
+    public ProblemDetail handleUnitTypeNotFound(UnitTypeNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Unit type not found");
+
+        return problem;
+    }
+
+    // 409 (if another unit type already uses this code or name)
+    @ExceptionHandler(UnitTypeAlreadyExistsException.class)
+    public ProblemDetail handleUnitTypeAlreadyExists(UnitTypeAlreadyExistsException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Unit type already exists");
+
+        return problem;
+    }
+
+    // 409 (if the unit type is still used by rental units, so it can't be deleted)
+    @ExceptionHandler(UnitTypeInUseException.class)
+    public ProblemDetail handleUnitTypeInUse(UnitTypeInUseException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Unit type in use");
 
         return problem;
     }

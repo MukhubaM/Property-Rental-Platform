@@ -50,9 +50,11 @@ public class PropertyTypeController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePropertyType(@PathVariable("id") Long id) {
         propertyTypeService.deletePropertyType(id);
+    }
     @PutMapping("/{id}")
     public PropertyTypeResponse updatePropertyType(@PathVariable("id") Long id,
                                                    @Valid @RequestBody UpdatePropertyTypeRequest request) {
+
         return propertyTypeService.updatePropertyType(id, request);
     }
 }
