@@ -75,6 +75,7 @@ public class PropertyTypeService {
             throw new PropertyTypeInUseException(id);
         }
     }
+
     public PropertyTypeResponse updatePropertyType(Long id, UpdatePropertyTypeRequest request) {
 
         // Load the property type to update or fail with 404 if the id doesn't exist

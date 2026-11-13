@@ -20,6 +20,9 @@ import propertyrental.platform.listing.domain.FacilityAlreadyExistsException;
 import propertyrental.platform.listing.domain.FacilityInUseException;
 import propertyrental.platform.listing.domain.FacilityNotFoundException;
 import propertyrental.platform.listing.domain.AvailabilityStatusNotFoundException;
+import propertyrental.platform.listing.domain.UnitTypeAlreadyExistsException;
+import propertyrental.platform.listing.domain.UnitTypeInUseException;
+import propertyrental.platform.listing.domain.UnitTypeNotFoundException;
 
 @RestControllerAdvice(basePackageClasses = ListingExceptionHandler.class)
 public class ListingExceptionHandler {
@@ -108,6 +111,11 @@ public class ListingExceptionHandler {
     public ProblemDetail handleFacilityNotFound(FacilityNotFoundException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setTitle("Facility not found");
+    // 404 (if the requested unit type id doesn't exist)
+    @ExceptionHandler(UnitTypeNotFoundException.class)
+    public ProblemDetail handleUnitTypeNotFound(UnitTypeNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Unit type not found");
 
         return problem;
     }
@@ -117,6 +125,11 @@ public class ListingExceptionHandler {
     public ProblemDetail handleFacilityAlreadyExists(FacilityAlreadyExistsException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Facility already exists");
+    // 409 (if another unit type already uses this code or name)
+    @ExceptionHandler(UnitTypeAlreadyExistsException.class)
+    public ProblemDetail handleUnitTypeAlreadyExists(UnitTypeAlreadyExistsException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Unit type already exists");
 
         return problem;
     }
@@ -135,6 +148,11 @@ public class ListingExceptionHandler {
     public ProblemDetail handleAvailabilityStatusNotFound(AvailabilityStatusNotFoundException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setTitle("Availability status not found");
+    // 409 (if the unit type is still used by rental units, so it can't be deleted)
+    @ExceptionHandler(UnitTypeInUseException.class)
+    public ProblemDetail handleUnitTypeInUse(UnitTypeInUseException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Unit type in use");
 
         return problem;
     }
