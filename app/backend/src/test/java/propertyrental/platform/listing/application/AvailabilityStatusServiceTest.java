@@ -2,8 +2,12 @@ package propertyrental.platform.listing.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +20,8 @@ import propertyrental.platform.listing.application.service.AvailabilityStatusSer
 import propertyrental.platform.listing.domain.AvailabilityStatusNotFoundException;
 import propertyrental.platform.listing.infrastructure.persistence.entity.AvailabilityStatusEntity;
 import propertyrental.platform.listing.infrastructure.persistence.repository.AvailabilityStatusRepository;
+import propertyrental.platform.listing.api.dto.request.CreateAvailabilityStatusRequest;
+import propertyrental.platform.listing.domain.AvailabilityStatusAlreadyExistsException;
 
 class AvailabilityStatusServiceTest {
 
@@ -67,5 +73,42 @@ class AvailabilityStatusServiceTest {
         assertThatThrownBy(() -> service.getAvailabilityStatusById(99L))
                 .isInstanceOf(AvailabilityStatusNotFoundException.class)
                 .hasMessageContaining("99");
+    }
+
+    // ---- create ----
+    @Test
+    void createSavesAndReturnsNewAvailabilityStatus() {
+        when(repository.save(any(AvailabilityStatusEntity.class))).thenAnswer(invocation -> {
+            AvailabilityStatusEntity saved = invocation.getArgument(0);
+            saved.setId(5L);
+            return saved;
+        });
+
+        AvailabilityStatusResponse response = service.createAvailabilityStatus(
+                new CreateAvailabilityStatusRequest("TEMP", "Temp Status"));
+
+        assertThat(response).isEqualTo(new AvailabilityStatusResponse(5L, "TEMP", "Temp Status"));
+    }
+
+    @Test
+    void createThrowsWhenCodeAlreadyExists() {
+        when(repository.existsByCode("AVAILABLE")).thenReturn(true);
+
+        assertThatThrownBy(() -> service.createAvailabilityStatus(
+                new CreateAvailabilityStatusRequest("AVAILABLE", "Other")))
+                .isInstanceOf(AvailabilityStatusAlreadyExistsException.class)
+                .hasMessageContaining("code");
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void createThrowsWhenNameAlreadyExists() {
+        when(repository.existsByName("Available")).thenReturn(true);
+
+        assertThatThrownBy(() -> service.createAvailabilityStatus(
+                new CreateAvailabilityStatusRequest("NEW_CODE", "Available")))
+                .isInstanceOf(AvailabilityStatusAlreadyExistsException.class)
+                .hasMessageContaining("name");
+        verify(repository, never()).save(any());
     }
 }
