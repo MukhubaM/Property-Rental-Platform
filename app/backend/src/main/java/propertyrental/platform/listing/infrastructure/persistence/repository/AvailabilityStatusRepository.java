@@ -7,4 +7,8 @@ import propertyrental.platform.listing.infrastructure.persistence.entity.Availab
 
 @Repository
 public interface AvailabilityStatusRepository extends JpaRepository<AvailabilityStatusEntity, Long> {
+
+    // Used by create (Checks if the codde or name is already taken)
+    boolean existsByCode(String code);
+    boolean existsByName(String name);
 }

@@ -11,6 +11,9 @@ import propertyrental.platform.listing.api.dto.response.AvailabilityStatusRespon
 import propertyrental.platform.listing.application.mapper.AvailabilityStatusMapper;
 import propertyrental.platform.listing.infrastructure.persistence.repository.AvailabilityStatusRepository;
 import propertyrental.platform.listing.domain.AvailabilityStatusNotFoundException;
+import propertyrental.platform.listing.api.dto.request.CreateAvailabilityStatusRequest;
+import propertyrental.platform.listing.domain.AvailabilityStatusAlreadyExistsException;
+import propertyrental.platform.listing.infrastructure.persistence.entity.AvailabilityStatusEntity;
 
 @Service
 @RequiredArgsConstructor
@@ -35,5 +38,21 @@ public class AvailabilityStatusService {
         return availabilityStatusRepository.findById(id)
                 .map(availabilityStatusMapper::toResponse)
                 .orElseThrow(() -> new AvailabilityStatusNotFoundException(id));
+    }
+
+    @Transactional
+    public AvailabilityStatusResponse createAvailabilityStatus(CreateAvailabilityStatusRequest request) {
+
+        // This method reject the request (409) if the code or name is already taken
+        if (availabilityStatusRepository.existsByCode(request.code())) {
+            throw new AvailabilityStatusAlreadyExistsException("code", request.code());
+        }
+        if (availabilityStatusRepository.existsByName(request.name())) {
+            throw new AvailabilityStatusAlreadyExistsException("name", request.name());
+        }
+
+        AvailabilityStatusEntity saved = availabilityStatusRepository.save(availabilityStatusMapper.toEntity(request));
+
+        return availabilityStatusMapper.toResponse(saved);
     }
 }

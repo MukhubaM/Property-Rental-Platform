@@ -1,6 +1,9 @@
 package propertyrental.platform.listing.api;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -9,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -19,9 +23,15 @@ import propertyrental.platform.listing.api.controller.AvailabilityStatusControll
 import propertyrental.platform.listing.api.dto.response.AvailabilityStatusResponse;
 import propertyrental.platform.listing.application.service.AvailabilityStatusService;
 import propertyrental.platform.listing.domain.AvailabilityStatusNotFoundException;
+import propertyrental.platform.listing.api.dto.request.CreateAvailabilityStatusRequest;
+import propertyrental.platform.listing.domain.AvailabilityStatusAlreadyExistsException;
 
 @WebMvcTest(AvailabilityStatusController.class)
 class AvailabilityStatusControllerTest {
+
+    private static final String VALID_BODY = "{\"code\":\"TEMP\",\"name\":\"Temp Status\"}";
+    private static final String BLANK_CODE_BODY = "{\"code\":\"\",\"name\":\"Temp Status\"}";
+    private static final String LONG_CODE_BODY = "{\"code\":\"" + "A".repeat(51) + "\",\"name\":\"Temp Status\"}";
 
     @Autowired
     private MockMvc mockMvc;
@@ -81,5 +91,54 @@ class AvailabilityStatusControllerTest {
     void getByIdReturns400WhenIdIsNotANumber() throws Exception {
         mockMvc.perform(get("/api/v1/availability-statuses/abc"))
                 .andExpect(status().isBadRequest());
+    }
+
+    // ---- create ----
+    @Test
+    void createReturns201WithCreatedAvailabilityStatus() throws Exception {
+        when(availabilityStatusService.createAvailabilityStatus(any(CreateAvailabilityStatusRequest.class)))
+                .thenReturn(new AvailabilityStatusResponse(5L, "TEMP", "Temp Status"));
+
+        mockMvc.perform(post("/api/v1/availability-statuses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(VALID_BODY))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(5))
+                .andExpect(jsonPath("$.code").value("TEMP"))
+                .andExpect(jsonPath("$.name").value("Temp Status"));
+    }
+
+    @Test
+    void createReturns400WhenCodeIsBlank() throws Exception {
+        mockMvc.perform(post("/api/v1/availability-statuses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(BLANK_CODE_BODY))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.code").exists());
+
+        verifyNoInteractions(availabilityStatusService);
+    }
+
+    @Test
+    void createReturns400WhenCodeIsTooLong() throws Exception {
+        mockMvc.perform(post("/api/v1/availability-statuses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(LONG_CODE_BODY))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.code").exists());
+
+        verifyNoInteractions(availabilityStatusService);
+    }
+
+    @Test
+    void createReturns409WhenCodeOrNameAlreadyExists() throws Exception {
+        when(availabilityStatusService.createAvailabilityStatus(any(CreateAvailabilityStatusRequest.class)))
+                .thenThrow(new AvailabilityStatusAlreadyExistsException("code", "TEMP"));
+
+        mockMvc.perform(post("/api/v1/availability-statuses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(VALID_BODY))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Availability status already exists"));
     }
 }
