@@ -9,8 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import propertyrental.platform.listing.api.dto.response.AvailabilityStatusResponse;
 import propertyrental.platform.listing.application.mapper.AvailabilityStatusMapper;
+import propertyrental.platform.listing.infrastructure.persistence.entity.AvailabilityStatusEntity;
 import propertyrental.platform.listing.infrastructure.persistence.repository.AvailabilityStatusRepository;
 import propertyrental.platform.listing.domain.AvailabilityStatusNotFoundException;
+import propertyrental.platform.listing.api.dto.request.UpdateAvailabilityStatusRequest;
+import propertyrental.platform.listing.domain.AvailabilityStatusAlreadyExistsException;
 
 @Service
 @RequiredArgsConstructor
@@ -35,5 +38,25 @@ public class AvailabilityStatusService {
         return availabilityStatusRepository.findById(id)
                 .map(availabilityStatusMapper::toResponse)
                 .orElseThrow(() -> new AvailabilityStatusNotFoundException(id));
+    }
+
+    @Transactional
+    public AvailabilityStatusResponse updateAvailabilityStatus(Long id, UpdateAvailabilityStatusRequest request) {
+        // Load the availability status to update or fail with 404 if the id doesn't exist
+        AvailabilityStatusEntity availabilityStatus = availabilityStatusRepository.findById(id)
+                .orElseThrow(() -> new AvailabilityStatusNotFoundException(id));
+
+        // Reject the update (409) if a different availability status already uses this code or name
+        if (availabilityStatusRepository.existsByCodeAndIdNot(request.code(), id)) {
+            throw new AvailabilityStatusAlreadyExistsException("code", request.code());
+        }
+        if (availabilityStatusRepository.existsByNameAndIdNot(request.name(), id)) {
+            throw new AvailabilityStatusAlreadyExistsException("name", request.name());
+        }
+
+        // Applies new values to the existing entity and save it
+        availabilityStatusMapper.updateEntity(availabilityStatus, request);
+
+        return availabilityStatusMapper.toResponse(availabilityStatusRepository.save(availabilityStatus));
     }
 }

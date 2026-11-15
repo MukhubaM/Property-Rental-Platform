@@ -2,6 +2,10 @@ package propertyrental.platform.listing.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -16,6 +20,9 @@ import propertyrental.platform.listing.application.service.AvailabilityStatusSer
 import propertyrental.platform.listing.domain.AvailabilityStatusNotFoundException;
 import propertyrental.platform.listing.infrastructure.persistence.entity.AvailabilityStatusEntity;
 import propertyrental.platform.listing.infrastructure.persistence.repository.AvailabilityStatusRepository;
+import propertyrental.platform.listing.api.dto.request.UpdateAvailabilityStatusRequest;
+import propertyrental.platform.listing.domain.AvailabilityStatusAlreadyExistsException;
+import propertyrental.platform.listing.domain.AvailabilityStatusNotFoundException;
 
 class AvailabilityStatusServiceTest {
 
@@ -67,5 +74,51 @@ class AvailabilityStatusServiceTest {
         assertThatThrownBy(() -> service.getAvailabilityStatusById(99L))
                 .isInstanceOf(AvailabilityStatusNotFoundException.class)
                 .hasMessageContaining("99");
+    }
+
+    // ---- update ----
+    @Test
+    void updateSavesAndReturnsUpdatedAvailabilityStatus() {
+        AvailabilityStatusEntity entity = availabilityStatus(5L, "TEMP", "Temp Status");
+        when(repository.findById(5L)).thenReturn(Optional.of(entity));
+        when(repository.save(entity)).thenReturn(entity);
+
+        AvailabilityStatusResponse response = service.updateAvailabilityStatus(
+                5L, new UpdateAvailabilityStatusRequest("TEMP", "Temp Status 2"));
+
+        assertThat(response).isEqualTo(new AvailabilityStatusResponse(5L, "TEMP", "Temp Status 2"));
+    }
+
+    @Test
+    void updateThrowsWhenNotFound() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.updateAvailabilityStatus(99L, new UpdateAvailabilityStatusRequest("X", "Y")))
+                .isInstanceOf(AvailabilityStatusNotFoundException.class);
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void updateThrowsWhenCodeBelongsToAnotherAvailabilityStatus() {
+        when(repository.findById(5L)).thenReturn(Optional.of(availabilityStatus(5L, "TEMP", "Temp Status")));
+        when(repository.existsByCodeAndIdNot("AVAILABLE", 5L)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.updateAvailabilityStatus(
+                5L, new UpdateAvailabilityStatusRequest("AVAILABLE", "Temp Status")))
+                .isInstanceOf(AvailabilityStatusAlreadyExistsException.class)
+                .hasMessageContaining("code");
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void updateThrowsWhenNameBelongsToAnotherAvailabilityStatus() {
+        when(repository.findById(5L)).thenReturn(Optional.of(availabilityStatus(5L, "TEMP", "Temp Status")));
+        when(repository.existsByNameAndIdNot("Available", 5L)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.updateAvailabilityStatus(
+                5L, new UpdateAvailabilityStatusRequest("TEMP", "Available")))
+                .isInstanceOf(AvailabilityStatusAlreadyExistsException.class)
+                .hasMessageContaining("name");
+        verify(repository, never()).save(any());
     }
 }
