@@ -15,4 +15,5 @@ public interface AvailabilityStatusRepository extends JpaRepository<Availability
     // Used by update (this one checks if the code or name taken by a different availability status)
     boolean existsByCodeAndIdNot(String code, Long id);
     boolean existsByNameAndIdNot(String name, Long id);
+
 }

@@ -116,6 +116,7 @@ public class ListingExceptionHandler {
         return problem;
     }
 
+
     // 404 (if the requested unit type id doesn't exist)
     @ExceptionHandler(UnitTypeNotFoundException.class)
     public ProblemDetail handleUnitTypeNotFound(UnitTypeNotFoundException ex) {
@@ -127,12 +128,14 @@ public class ListingExceptionHandler {
 
     // 409 (if another facility already uses this code or name)
     @ExceptionHandler(FacilityAlreadyExistsException.class)
-    public ProblemDetail handleFacilityAlreadyExists(FacilityAlreadyExistsException ex) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
-        problem.setTitle("Facility already exists");
+    public ProblemDetail handleFacilityAlreadyExists(FacilityAlreadyExistsException ex){
+            ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+            problem.setTitle("Facility already exists");
 
-        return problem;
-    }
+            return problem;
+        }
+  
+
 
     // 409 (if another unit type already uses this code or name)
     @ExceptionHandler(UnitTypeAlreadyExistsException.class)
@@ -154,12 +157,15 @@ public class ListingExceptionHandler {
 
     // 404 (if the requested availability status id doesn't exist)
     @ExceptionHandler(AvailabilityStatusNotFoundException.class)
-    public ProblemDetail handleAvailabilityStatusNotFound(AvailabilityStatusNotFoundException ex) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
-        problem.setTitle("Availability status not found");
+    public ProblemDetail handleAvailabilityStatusNotFound(AvailabilityStatusNotFoundException ex){
+                ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+                problem.setTitle("Availability status not found");
 
-        return problem;
-    }
+                return problem;
+            }
+  
+
+
     // 409 (if the unit type is still used by rental units, so it can't be deleted)
     @ExceptionHandler(UnitTypeInUseException.class)
     public ProblemDetail handleUnitTypeInUse(UnitTypeInUseException ex) {

@@ -1,5 +1,8 @@
+
 package propertyrental.platform.listing.api.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -25,39 +28,60 @@ import propertyrental.platform.listing.application.service.UnitTypeService;
 @RestController
 @RequestMapping("/api/v1/unit-types")
 @RequiredArgsConstructor
+@Tag(
+        name = "Unit Types",
+        description = "APIs for managing rental unit types, including creating, retrieving, updating, and deleting unit types."
+)
 public class UnitTypeController {
 
     private final UnitTypeService unitTypeService;
 
     @GetMapping
+    @Operation(
+            summary = "Get all unit types",
+            description = "Retrieves a list of all available rental unit types."
+    )
     public List<UnitTypeResponse> getAllUnitTypes() {
-
         return unitTypeService.getAllUnitTypes();
     }
 
     @GetMapping("/{id}")
+    @Operation(
+            summary = "Get unit type by ID",
+            description = "Retrieves a specific rental unit type using its unique identifier."
+    )
     public UnitTypeResponse getUnitTypeById(@PathVariable("id") Long id) {
-
         return unitTypeService.getUnitTypeById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UnitTypeResponse createUnitType(@Valid @RequestBody CreateUnitTypeRequest request) {
-
+    @Operation(
+            summary = "Create a unit type",
+            description = "Creates a new rental unit type using the information provided in the request body."
+    )
+    public UnitTypeResponse createUnitType(
+            @Valid @RequestBody CreateUnitTypeRequest request) {
         return unitTypeService.createUnitType(request);
     }
 
     @PutMapping("/{id}")
-    public UnitTypeResponse updateUnitType(@PathVariable("id")
-                                           Long id,
-                                           @Valid @RequestBody
-                                           UpdateUnitTypeRequest request) {
+    @Operation(
+            summary = "Update a unit type",
+            description = "Updates an existing rental unit type identified by its ID using the information provided in the request body."
+    )
+    public UnitTypeResponse updateUnitType(
+            @PathVariable("id") Long id,
+            @Valid @RequestBody UpdateUnitTypeRequest request) {
         return unitTypeService.updateUnitType(id, request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(
+            summary = "Delete a unit type",
+            description = "Deletes an existing rental unit type using its unique identifier."
+    )
     public void deleteUnitType(@PathVariable("id") Long id) {
         unitTypeService.deleteUnitType(id);
     }

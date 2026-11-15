@@ -2,12 +2,19 @@ package propertyrental.platform.listing.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+<<<<<<< HEAD
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+=======
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+>>>>>>> 139c82fb84885f4672c630e7d6f7673b7ffa3f97
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,9 +27,14 @@ import propertyrental.platform.listing.application.service.AvailabilityStatusSer
 import propertyrental.platform.listing.domain.AvailabilityStatusNotFoundException;
 import propertyrental.platform.listing.infrastructure.persistence.entity.AvailabilityStatusEntity;
 import propertyrental.platform.listing.infrastructure.persistence.repository.AvailabilityStatusRepository;
+<<<<<<< HEAD
 import propertyrental.platform.listing.api.dto.request.UpdateAvailabilityStatusRequest;
 import propertyrental.platform.listing.domain.AvailabilityStatusAlreadyExistsException;
 import propertyrental.platform.listing.domain.AvailabilityStatusNotFoundException;
+=======
+import propertyrental.platform.listing.api.dto.request.CreateAvailabilityStatusRequest;
+import propertyrental.platform.listing.domain.AvailabilityStatusAlreadyExistsException;
+>>>>>>> 139c82fb84885f4672c630e7d6f7673b7ffa3f97
 
 class AvailabilityStatusServiceTest {
 
@@ -76,6 +88,7 @@ class AvailabilityStatusServiceTest {
                 .hasMessageContaining("99");
     }
 
+<<<<<<< HEAD
     // ---- update ----
     @Test
     void updateSavesAndReturnsUpdatedAvailabilityStatus() {
@@ -105,18 +118,49 @@ class AvailabilityStatusServiceTest {
 
         assertThatThrownBy(() -> service.updateAvailabilityStatus(
                 5L, new UpdateAvailabilityStatusRequest("AVAILABLE", "Temp Status")))
+=======
+    // ---- create ----
+    @Test
+    void createSavesAndReturnsNewAvailabilityStatus() {
+        when(repository.save(any(AvailabilityStatusEntity.class))).thenAnswer(invocation -> {
+            AvailabilityStatusEntity saved = invocation.getArgument(0);
+            saved.setId(5L);
+            return saved;
+        });
+
+        AvailabilityStatusResponse response = service.createAvailabilityStatus(
+                new CreateAvailabilityStatusRequest("TEMP", "Temp Status"));
+
+        assertThat(response).isEqualTo(new AvailabilityStatusResponse(5L, "TEMP", "Temp Status"));
+    }
+
+    @Test
+    void createThrowsWhenCodeAlreadyExists() {
+        when(repository.existsByCode("AVAILABLE")).thenReturn(true);
+
+        assertThatThrownBy(() -> service.createAvailabilityStatus(
+                new CreateAvailabilityStatusRequest("AVAILABLE", "Other")))
+>>>>>>> 139c82fb84885f4672c630e7d6f7673b7ffa3f97
                 .isInstanceOf(AvailabilityStatusAlreadyExistsException.class)
                 .hasMessageContaining("code");
         verify(repository, never()).save(any());
     }
 
     @Test
+<<<<<<< HEAD
     void updateThrowsWhenNameBelongsToAnotherAvailabilityStatus() {
         when(repository.findById(5L)).thenReturn(Optional.of(availabilityStatus(5L, "TEMP", "Temp Status")));
         when(repository.existsByNameAndIdNot("Available", 5L)).thenReturn(true);
 
         assertThatThrownBy(() -> service.updateAvailabilityStatus(
                 5L, new UpdateAvailabilityStatusRequest("TEMP", "Available")))
+=======
+    void createThrowsWhenNameAlreadyExists() {
+        when(repository.existsByName("Available")).thenReturn(true);
+
+        assertThatThrownBy(() -> service.createAvailabilityStatus(
+                new CreateAvailabilityStatusRequest("NEW_CODE", "Available")))
+>>>>>>> 139c82fb84885f4672c630e7d6f7673b7ffa3f97
                 .isInstanceOf(AvailabilityStatusAlreadyExistsException.class)
                 .hasMessageContaining("name");
         verify(repository, never()).save(any());
