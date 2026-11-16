@@ -134,8 +134,6 @@ public class ListingExceptionHandler {
 
             return problem;
         }
-  
-
 
     // 409 (if another unit type already uses this code or name)
     @ExceptionHandler(UnitTypeAlreadyExistsException.class)

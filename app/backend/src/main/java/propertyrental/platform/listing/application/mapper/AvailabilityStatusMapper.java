@@ -31,6 +31,7 @@ public class AvailabilityStatusMapper {
 
     // This applies an update request to an existing entity in place
     public void updateEntity(AvailabilityStatusEntity availabilityStatus, UpdateAvailabilityStatusRequest request) {
+
         availabilityStatus.setCode(request.code());
         availabilityStatus.setName(request.name());
     }
