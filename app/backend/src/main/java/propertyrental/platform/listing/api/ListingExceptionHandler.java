@@ -134,13 +134,6 @@ public class ListingExceptionHandler {
 
             return problem;
         }
-  
-    public ProblemDetail handleFacilityAlreadyExists(FacilityAlreadyExistsException ex) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
-        problem.setTitle("Facility already exists");
-
-        return problem;
-    }
 
     // 409 (if another unit type already uses this code or name)
     @ExceptionHandler(UnitTypeAlreadyExistsException.class)
@@ -169,12 +162,7 @@ public class ListingExceptionHandler {
                 return problem;
             }
   
-    public ProblemDetail handleAvailabilityStatusNotFound(AvailabilityStatusNotFoundException ex) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
-        problem.setTitle("Availability status not found");
 
-        return problem;
-    }
 
     // 409 (if the unit type is still used by rental units, so it can't be deleted)
     @ExceptionHandler(UnitTypeInUseException.class)
