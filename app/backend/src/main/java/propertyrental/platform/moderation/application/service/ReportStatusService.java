@@ -11,6 +11,9 @@ import propertyrental.platform.moderation.api.dto.response.ReportStatusResponse;
 import propertyrental.platform.moderation.application.mapper.ReportStatusMapper;
 import propertyrental.platform.moderation.infrastructure.persistence.repository.ReportStatusRepository;
 import propertyrental.platform.moderation.domain.ReportStatusNotFoundException;
+import propertyrental.platform.moderation.api.dto.request.CreateReportStatusRequest;
+import propertyrental.platform.moderation.domain.ReportStatusAlreadyExistsException;
+import propertyrental.platform.moderation.infrastructure.persistence.entity.ReportStatusEntity;
 
 @Service
 @RequiredArgsConstructor
@@ -35,5 +38,21 @@ public class ReportStatusService {
         return reportStatusRepository.findById(id)
                 .map(reportStatusMapper::toResponse)
                 .orElseThrow(() -> new ReportStatusNotFoundException(id));
+    }
+
+    @Transactional
+    public ReportStatusResponse createReportStatus(CreateReportStatusRequest request) {
+
+        // This reject the request (409) if the code or name is already taken
+        if (reportStatusRepository.existsByCode(request.code())) {
+            throw new ReportStatusAlreadyExistsException("code", request.code());
+        }
+        if (reportStatusRepository.existsByName(request.name())) {
+            throw new ReportStatusAlreadyExistsException("name", request.name());
+        }
+
+        ReportStatusEntity saved = reportStatusRepository.save(reportStatusMapper.toEntity(request));
+
+        return reportStatusMapper.toResponse(saved);
     }
 }
