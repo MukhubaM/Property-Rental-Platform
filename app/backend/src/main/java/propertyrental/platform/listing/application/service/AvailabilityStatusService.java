@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import propertyrental.platform.listing.api.dto.response.AvailabilityStatusResponse;
 import propertyrental.platform.listing.application.mapper.AvailabilityStatusMapper;
@@ -76,5 +77,20 @@ public class AvailabilityStatusService {
         AvailabilityStatusEntity saved = availabilityStatusRepository.save(availabilityStatusMapper.toEntity(request));
 
         return availabilityStatusMapper.toResponse(saved);
+    }
+
+    @Transactional
+    public void deleteAvailabilityStatus(Long id) {
+
+        // This loads the availability status to delete or fail with 404 if the id doesn't exist
+        AvailabilityStatusEntity availabilityStatus = availabilityStatusRepository.findById(id)
+                .orElseThrow(() -> new AvailabilityStatusNotFoundException(id));
+
+        try {
+            availabilityStatusRepository.delete(availabilityStatus);
+            availabilityStatusRepository.flush();
+        } catch (DataIntegrityViolationException ex) {
+            throw new AvailabilityStatusInUseException(id);
+        }
     }
 }

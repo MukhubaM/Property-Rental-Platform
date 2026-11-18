@@ -1,2 +1,71 @@
-package propertyrental.platform.moderation.application;public class ReportStatusServiceTest {
+package propertyrental.platform.moderation.application;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
+
+import propertyrental.platform.moderation.api.dto.response.ReportStatusResponse;
+import propertyrental.platform.moderation.application.mapper.ReportStatusMapper;
+import propertyrental.platform.moderation.application.service.ReportStatusService;
+import propertyrental.platform.moderation.domain.ReportStatusNotFoundException;
+import propertyrental.platform.moderation.infrastructure.persistence.entity.ReportStatusEntity;
+import propertyrental.platform.moderation.infrastructure.persistence.repository.ReportStatusRepository;
+
+class ReportStatusServiceTest {
+
+    private final ReportStatusRepository repository = mock(ReportStatusRepository.class);
+    private final ReportStatusService service = new ReportStatusService(repository, new ReportStatusMapper());
+
+    private ReportStatusEntity reportStatus(Long id, String code, String name) {
+        ReportStatusEntity entity = new ReportStatusEntity();
+        entity.setId(id);
+        entity.setCode(code);
+        entity.setName(name);
+
+        return entity;
+    }
+
+    // ---- get all ----
+    @Test
+    void getAllReturnsMappedReportStatuses() {
+        when(repository.findAll()).thenReturn(List.of(
+                reportStatus(1L, "OPEN", "Open"),
+                reportStatus(2L, "UNDER_REVIEW", "Under Review")));
+
+        assertThat(service.getAllReportStatuses()).containsExactly(
+                new ReportStatusResponse(1L, "OPEN", "Open"),
+                new ReportStatusResponse(2L, "UNDER_REVIEW", "Under Review"));
+    }
+
+    @Test
+    void getAllReturnsEmptyListWhenThereAreNoReportStatuses() {
+        when(repository.findAll()).thenReturn(List.of());
+
+        assertThat(service.getAllReportStatuses()).isEmpty();
+    }
+
+    // ---- get by id ----
+    @Test
+    void getByIdReturnsReportStatusWhenFound() {
+        when(repository.findById(1L)).thenReturn(Optional.of(reportStatus(1L, "OPEN", "Open")));
+
+        assertThat(service.getReportStatusById(1L))
+                .isEqualTo(new ReportStatusResponse(1L, "OPEN", "Open"));
+    }
+
+    @Test
+    void getByIdThrowsWhenNotFound() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.getReportStatusById(99L))
+                .isInstanceOf(ReportStatusNotFoundException.class)
+                .hasMessageContaining("99");
+    }
 }
