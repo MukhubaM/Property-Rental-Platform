@@ -24,6 +24,7 @@ import propertyrental.platform.listing.domain.UnitTypeAlreadyExistsException;
 import propertyrental.platform.listing.domain.UnitTypeInUseException;
 import propertyrental.platform.listing.domain.UnitTypeNotFoundException;
 import propertyrental.platform.listing.domain.AvailabilityStatusAlreadyExistsException;
+import propertyrental.platform.listing.domain.AvailabilityStatusInUseException;
 
 @RestControllerAdvice(basePackageClasses = ListingExceptionHandler.class)
 public class ListingExceptionHandler {
@@ -134,13 +135,7 @@ public class ListingExceptionHandler {
 
             return problem;
         }
-  
-    public ProblemDetail handleFacilityAlreadyExists(FacilityAlreadyExistsException ex) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
-        problem.setTitle("Facility already exists");
 
-        return problem;
-    }
 
     // 409 (if another unit type already uses this code or name)
     @ExceptionHandler(UnitTypeAlreadyExistsException.class)
@@ -168,13 +163,6 @@ public class ListingExceptionHandler {
 
                 return problem;
             }
-  
-    public ProblemDetail handleAvailabilityStatusNotFound(AvailabilityStatusNotFoundException ex) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
-        problem.setTitle("Availability status not found");
-
-        return problem;
-    }
 
     // 409 (if the unit type is still used by rental units, so it can't be deleted)
     @ExceptionHandler(UnitTypeInUseException.class)
@@ -190,6 +178,15 @@ public class ListingExceptionHandler {
     public ProblemDetail handleAvailabilityStatusAlreadyExists(AvailabilityStatusAlreadyExistsException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Availability status already exists");
+
+        return problem;
+    }
+
+    // 409 (if the availability status is still used by rental units, so it can't be deleted)
+    @ExceptionHandler(AvailabilityStatusInUseException.class)
+    public ProblemDetail handleAvailabilityStatusInUse(AvailabilityStatusInUseException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Availability status in use");
 
         return problem;
     }

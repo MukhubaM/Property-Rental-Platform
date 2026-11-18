@@ -2,7 +2,8 @@ package propertyrental.platform.listing.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.never;
@@ -14,9 +15,11 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import propertyrental.platform.listing.api.dto.response.AvailabilityStatusResponse;
 import propertyrental.platform.listing.application.mapper.AvailabilityStatusMapper;
 import propertyrental.platform.listing.application.service.AvailabilityStatusService;
+import propertyrental.platform.listing.domain.AvailabilityStatusInUseException;
 import propertyrental.platform.listing.domain.AvailabilityStatusNotFoundException;
 import propertyrental.platform.listing.infrastructure.persistence.entity.AvailabilityStatusEntity;
 import propertyrental.platform.listing.infrastructure.persistence.repository.AvailabilityStatusRepository;
@@ -110,5 +113,37 @@ class AvailabilityStatusServiceTest {
                 .isInstanceOf(AvailabilityStatusAlreadyExistsException.class)
                 .hasMessageContaining("name");
         verify(repository, never()).save(any());
+    }
+
+    // ---- delete ----
+    @Test
+    void deleteRemovesExistingAvailabilityStatus() {
+        AvailabilityStatusEntity entity = availabilityStatus(5L, "TEMP", "Temp Status");
+        when(repository.findById(5L)).thenReturn(Optional.of(entity));
+
+        service.deleteAvailabilityStatus(5L);
+
+        verify(repository).delete(entity);
+    }
+
+    @Test
+    void deleteThrowsWhenNotFound() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.deleteAvailabilityStatus(99L))
+                .isInstanceOf(AvailabilityStatusNotFoundException.class)
+                .hasMessageContaining("99");
+        verify(repository, never()).delete(any());
+    }
+
+    @Test
+    void deleteThrowsWhenAvailabilityStatusIsStillUsedByRentalUnits() {
+        when(repository.findById(1L)).thenReturn(Optional.of(availabilityStatus(1L, "AVAILABLE", "Available")));
+        doThrow(new DataIntegrityViolationException("fk_rental_units_availability"))
+                .when(repository).flush();
+
+        assertThatThrownBy(() -> service.deleteAvailabilityStatus(1L))
+                .isInstanceOf(AvailabilityStatusInUseException.class)
+                .hasMessageContaining("1");
     }
 }

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -59,5 +60,11 @@ public class AvailabilityStatusController {
     public AvailabilityStatusResponse createAvailabilityStatus(@Valid @RequestBody CreateAvailabilityStatusRequest request) {
 
         return availabilityStatusService.createAvailabilityStatus(request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteAvailabilityStatus(@PathVariable("id") Long id) {
+        availabilityStatusService.deleteAvailabilityStatus(id);
     }
 }
