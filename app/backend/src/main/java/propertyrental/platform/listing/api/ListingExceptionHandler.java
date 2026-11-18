@@ -136,7 +136,6 @@ public class ListingExceptionHandler {
             return problem;
         }
 
-
     // 409 (if another unit type already uses this code or name)
     @ExceptionHandler(UnitTypeAlreadyExistsException.class)
     public ProblemDetail handleUnitTypeAlreadyExists(UnitTypeAlreadyExistsException ex) {
@@ -163,7 +162,8 @@ public class ListingExceptionHandler {
 
                 return problem;
             }
-
+  
+  
     // 409 (if the unit type is still used by rental units, so it can't be deleted)
     @ExceptionHandler(UnitTypeInUseException.class)
     public ProblemDetail handleUnitTypeInUse(UnitTypeInUseException ex) {
