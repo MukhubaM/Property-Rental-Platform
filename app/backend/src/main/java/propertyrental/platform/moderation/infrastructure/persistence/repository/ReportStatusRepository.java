@@ -6,4 +6,9 @@ import org.springframework.stereotype.Repository;
 import propertyrental.platform.moderation.infrastructure.persistence.entity.ReportStatusEntity;
 
 @Repository
-public interface ReportStatusRepository extends JpaRepository<ReportStatusEntity, Long> {}
+public interface ReportStatusRepository extends JpaRepository<ReportStatusEntity, Long> {
+
+    // This is used by create (checks if the code or name already taken)
+    boolean existsByCode(String code);
+    boolean existsByName(String name);
+}

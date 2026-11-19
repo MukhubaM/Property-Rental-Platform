@@ -11,12 +11,20 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import propertyrental.platform.moderation.api.dto.response.ReportStatusResponse;
 import propertyrental.platform.moderation.application.mapper.ReportStatusMapper;
 import propertyrental.platform.moderation.application.service.ReportStatusService;
 import propertyrental.platform.moderation.domain.ReportStatusNotFoundException;
 import propertyrental.platform.moderation.infrastructure.persistence.entity.ReportStatusEntity;
 import propertyrental.platform.moderation.infrastructure.persistence.repository.ReportStatusRepository;
+import propertyrental.platform.moderation.api.dto.request.CreateReportStatusRequest;
+import propertyrental.platform.moderation.domain.ReportStatusAlreadyExistsException;
 
 class ReportStatusServiceTest {
 
@@ -67,5 +75,41 @@ class ReportStatusServiceTest {
         assertThatThrownBy(() -> service.getReportStatusById(99L))
                 .isInstanceOf(ReportStatusNotFoundException.class)
                 .hasMessageContaining("99");
+    }
+
+    // ---- create ----
+    @Test
+    void createSavesAndReturnsNewReportStatus() {
+        when(repository.save(any(ReportStatusEntity.class))).thenAnswer(invocation -> {
+            ReportStatusEntity saved = invocation.getArgument(0);
+            saved.setId(5L);
+
+            return saved;
+        });
+
+        ReportStatusResponse response = service.createReportStatus(
+                new CreateReportStatusRequest("TEMP", "Temp Status"));
+
+        assertThat(response).isEqualTo(new ReportStatusResponse(5L, "TEMP", "Temp Status"));
+    }
+
+    @Test
+    void createThrowsWhenCodeAlreadyExists() {
+        when(repository.existsByCode("OPEN")).thenReturn(true);
+
+        assertThatThrownBy(() -> service.createReportStatus(new CreateReportStatusRequest("OPEN", "Other")))
+                .isInstanceOf(ReportStatusAlreadyExistsException.class)
+                .hasMessageContaining("code");
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void createThrowsWhenNameAlreadyExists() {
+        when(repository.existsByName("Open")).thenReturn(true);
+
+        assertThatThrownBy(() -> service.createReportStatus(new CreateReportStatusRequest("NEW_CODE", "Open")))
+                .isInstanceOf(ReportStatusAlreadyExistsException.class)
+                .hasMessageContaining("name");
+        verify(repository, never()).save(any());
     }
 }
