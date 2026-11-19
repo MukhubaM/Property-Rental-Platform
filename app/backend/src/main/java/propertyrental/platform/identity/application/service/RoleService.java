@@ -1,8 +1,13 @@
 package propertyrental.platform.identity.application.service;
 
 import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
+
+import org.springframework.dao.DataIntegrityViolationException;
+
 import propertyrental.platform.identity.api.dto.request.UpdateRoleRequest;
 import propertyrental.platform.identity.api.dto.response.RoleResponse;
 import propertyrental.platform.identity.application.mapper.RoleMapper;
@@ -10,6 +15,8 @@ import propertyrental.platform.identity.domain.RoleAlreadyExistsException;
 import propertyrental.platform.identity.domain.RoleNotFoundException;
 import propertyrental.platform.identity.infrastructure.persistence.entity.RoleEntity;
 import propertyrental.platform.identity.infrastructure.persistence.repository.RoleRepository;
+import propertyrental.platform.identity.domain.RoleInUseException;
+import propertyrental.platform.identity.infrastructure.persistence.entity.RoleEntity;
 
 import java.util.List;
 
@@ -50,6 +57,22 @@ public class RoleService {
 
         // This apply the new values to the existing entity and save it
         roleMapper.updateEntity(role, request);
+
         return roleMapper.toResponse(roleRepository.save(role));
+    }
+
+    @Transactional
+    public void deleteRole(Long id) {
+
+        // This load the role to delete or fail with 404 if the id doesn't exist
+        RoleEntity role = roleRepository.findById(id)
+                .orElseThrow(() -> new RoleNotFoundException(id));
+
+        try {
+            roleRepository.delete(role);
+            roleRepository.flush();
+        } catch (DataIntegrityViolationException ex) {
+            throw new RoleInUseException(id);
+        }
     }
 }
