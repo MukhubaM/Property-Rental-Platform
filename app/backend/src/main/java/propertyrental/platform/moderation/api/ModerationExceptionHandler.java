@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import propertyrental.platform.moderation.domain.ReportReasonAlreadyExistsException;
 import propertyrental.platform.moderation.domain.ReportReasonInUseException;
 import propertyrental.platform.moderation.domain.ReportReasonNotFoundException;
+import propertyrental.platform.moderation.domain.ReportStatusNotFoundException;
+import propertyrental.platform.moderation.domain.ReportStatusAlreadyExistsException;
 
 @RestControllerAdvice(basePackageClasses = ModerationExceptionHandler.class)
 public class ModerationExceptionHandler {
@@ -65,6 +67,24 @@ public class ModerationExceptionHandler {
                 HttpStatus.BAD_REQUEST, "Request validation failed");
         problem.setTitle("Invalid request");
         problem.setProperty("errors", errors);
+
+        return problem;
+    }
+
+    // 404 (if the requested report status id doesn't exist)
+    @ExceptionHandler(ReportStatusNotFoundException.class)
+    public ProblemDetail handleReportStatusNotFound(ReportStatusNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Report status not found");
+
+        return problem;
+    }
+
+    // 409 (if another report status already uses this code or name)
+    @ExceptionHandler(ReportStatusAlreadyExistsException.class)
+    public ProblemDetail handleReportStatusAlreadyExists(ReportStatusAlreadyExistsException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Report status already exists");
 
         return problem;
     }

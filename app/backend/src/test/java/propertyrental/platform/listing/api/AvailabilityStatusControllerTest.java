@@ -2,7 +2,9 @@ package propertyrental.platform.listing.api;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verifyNoInteractions;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -32,6 +34,7 @@ import propertyrental.platform.listing.domain.AvailabilityStatusNotFoundExceptio
 import propertyrental.platform.listing.api.dto.request.UpdateAvailabilityStatusRequest;
 import propertyrental.platform.listing.api.dto.request.CreateAvailabilityStatusRequest;
 import propertyrental.platform.listing.domain.AvailabilityStatusAlreadyExistsException;
+import propertyrental.platform.listing.domain.AvailabilityStatusInUseException;
 
 @WebMvcTest(AvailabilityStatusController.class)
 class AvailabilityStatusControllerTest {
@@ -192,5 +195,33 @@ class AvailabilityStatusControllerTest {
                         .content(VALID_BODY))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("Availability status already exists"));
+    }
+
+    // ---- delete ----
+    @Test
+    void deleteReturns204WithNoBody() throws Exception {
+        mockMvc.perform(delete("/api/v1/availability-statuses/5"))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    void deleteReturns404WhenNotFound() throws Exception {
+        doThrow(new AvailabilityStatusNotFoundException(99L))
+                .when(availabilityStatusService).deleteAvailabilityStatus(99L);
+
+        mockMvc.perform(delete("/api/v1/availability-statuses/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Availability status not found"));
+    }
+
+    @Test
+    void deleteReturns409WhenAvailabilityStatusIsInUse() throws Exception {
+        doThrow(new AvailabilityStatusInUseException(1L))
+                .when(availabilityStatusService).deleteAvailabilityStatus(1L);
+
+        mockMvc.perform(delete("/api/v1/availability-statuses/1"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Availability status in use"));
     }
 }
