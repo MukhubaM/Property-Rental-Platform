@@ -11,8 +11,6 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -25,6 +23,7 @@ import propertyrental.platform.moderation.infrastructure.persistence.entity.Repo
 import propertyrental.platform.moderation.infrastructure.persistence.repository.ReportStatusRepository;
 import propertyrental.platform.moderation.api.dto.request.CreateReportStatusRequest;
 import propertyrental.platform.moderation.domain.ReportStatusAlreadyExistsException;
+import propertyrental.platform.moderation.api.dto.request.UpdateReportStatusRequest;
 
 class ReportStatusServiceTest {
 
@@ -108,6 +107,52 @@ class ReportStatusServiceTest {
         when(repository.existsByName("Open")).thenReturn(true);
 
         assertThatThrownBy(() -> service.createReportStatus(new CreateReportStatusRequest("NEW_CODE", "Open")))
+                .isInstanceOf(ReportStatusAlreadyExistsException.class)
+                .hasMessageContaining("name");
+        verify(repository, never()).save(any());
+    }
+
+    // ---- update ----
+    @Test
+    void updateSavesAndReturnsUpdatedReportStatus() {
+        ReportStatusEntity entity = reportStatus(5L, "TEMP", "Temp Status");
+        when(repository.findById(5L)).thenReturn(Optional.of(entity));
+        when(repository.save(entity)).thenReturn(entity);
+
+        ReportStatusResponse response = service.updateReportStatus(
+                5L, new UpdateReportStatusRequest("TEMP", "Temp Status 2"));
+
+        assertThat(response).isEqualTo(new ReportStatusResponse(5L, "TEMP", "Temp Status 2"));
+    }
+
+    @Test
+    void updateThrowsWhenNotFound() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.updateReportStatus(99L, new UpdateReportStatusRequest("X", "Y")))
+                .isInstanceOf(ReportStatusNotFoundException.class);
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void updateThrowsWhenCodeBelongsToAnotherReportStatus() {
+        when(repository.findById(5L)).thenReturn(Optional.of(reportStatus(5L, "TEMP", "Temp Status")));
+        when(repository.existsByCodeAndIdNot("OPEN", 5L)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.updateReportStatus(
+                5L, new UpdateReportStatusRequest("OPEN", "Temp Status")))
+                .isInstanceOf(ReportStatusAlreadyExistsException.class)
+                .hasMessageContaining("code");
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void updateThrowsWhenNameBelongsToAnotherReportStatus() {
+        when(repository.findById(5L)).thenReturn(Optional.of(reportStatus(5L, "TEMP", "Temp Status")));
+        when(repository.existsByNameAndIdNot("Open", 5L)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.updateReportStatus(
+                5L, new UpdateReportStatusRequest("TEMP", "Open")))
                 .isInstanceOf(ReportStatusAlreadyExistsException.class)
                 .hasMessageContaining("name");
         verify(repository, never()).save(any());

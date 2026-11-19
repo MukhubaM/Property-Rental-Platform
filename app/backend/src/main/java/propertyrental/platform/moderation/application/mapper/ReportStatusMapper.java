@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import propertyrental.platform.moderation.api.dto.response.ReportStatusResponse;
 import propertyrental.platform.moderation.infrastructure.persistence.entity.ReportStatusEntity;
 import propertyrental.platform.moderation.api.dto.request.CreateReportStatusRequest;
+import propertyrental.platform.moderation.api.dto.request.UpdateReportStatusRequest;
 
 @Component
 public class ReportStatusMapper {
@@ -16,6 +17,13 @@ public class ReportStatusMapper {
         reportStatus.setName(request.name());
 
         return reportStatus;
+    }
+
+    //
+    //  This method applies an update request to an existing entity in place
+    public void updateEntity(ReportStatusEntity reportStatus, UpdateReportStatusRequest request) {
+        reportStatus.setCode(request.code());
+        reportStatus.setName(request.name());
     }
 
     // This convert an entity to the response DTO so that the entity is never exposed

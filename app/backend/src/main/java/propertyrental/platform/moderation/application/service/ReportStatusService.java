@@ -14,6 +14,7 @@ import propertyrental.platform.moderation.domain.ReportStatusNotFoundException;
 import propertyrental.platform.moderation.api.dto.request.CreateReportStatusRequest;
 import propertyrental.platform.moderation.domain.ReportStatusAlreadyExistsException;
 import propertyrental.platform.moderation.infrastructure.persistence.entity.ReportStatusEntity;
+import propertyrental.platform.moderation.api.dto.request.UpdateReportStatusRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -54,5 +55,26 @@ public class ReportStatusService {
         ReportStatusEntity saved = reportStatusRepository.save(reportStatusMapper.toEntity(request));
 
         return reportStatusMapper.toResponse(saved);
+    }
+
+    @Transactional
+    public ReportStatusResponse updateReportStatus(Long id, UpdateReportStatusRequest request) {
+
+        // This load the report status to update or fail with 404 if the id doesn't exist
+        ReportStatusEntity reportStatus = reportStatusRepository.findById(id)
+                .orElseThrow(() -> new ReportStatusNotFoundException(id));
+
+        // This one reject the update (409) if a different report status already uses this code or name
+        if (reportStatusRepository.existsByCodeAndIdNot(request.code(), id)) {
+            throw new ReportStatusAlreadyExistsException("code", request.code());
+        }
+        if (reportStatusRepository.existsByNameAndIdNot(request.name(), id)) {
+            throw new ReportStatusAlreadyExistsException("name", request.name());
+        }
+
+        // This method applies the new values to the existing entity and save it
+        reportStatusMapper.updateEntity(reportStatus, request);
+
+        return reportStatusMapper.toResponse(reportStatusRepository.save(reportStatus));
     }
 }
