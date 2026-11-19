@@ -10,6 +10,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import propertyrental.platform.listing.api.dto.response.AvailabilityStatusResponse;
 import propertyrental.platform.listing.application.mapper.AvailabilityStatusMapper;
+import propertyrental.platform.listing.domain.AvailabilityStatusInUseException;
 import propertyrental.platform.listing.infrastructure.persistence.entity.AvailabilityStatusEntity;
 import propertyrental.platform.listing.infrastructure.persistence.repository.AvailabilityStatusRepository;
 import propertyrental.platform.listing.domain.AvailabilityStatusNotFoundException;
@@ -81,13 +82,13 @@ public class AvailabilityStatusService {
 
     @Transactional
     public void deleteAvailabilityStatus(Long id) {
-
-        // This loads the availability status to delete or fail with 404 if the id doesn't exist
+        // Load the availability status to delete, or fail with 404 if the id doesn't exist
         AvailabilityStatusEntity availabilityStatus = availabilityStatusRepository.findById(id)
                 .orElseThrow(() -> new AvailabilityStatusNotFoundException(id));
 
         try {
             availabilityStatusRepository.delete(availabilityStatus);
+            // Flush now so a foreign key violation (rental units still use this status) surfaces here
             availabilityStatusRepository.flush();
         } catch (DataIntegrityViolationException ex) {
             throw new AvailabilityStatusInUseException(id);
