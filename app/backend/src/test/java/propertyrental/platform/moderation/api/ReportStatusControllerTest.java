@@ -13,7 +13,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.ArgumentMatchers.eq;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +30,13 @@ import propertyrental.platform.moderation.application.service.ReportStatusServic
 import propertyrental.platform.moderation.domain.ReportStatusNotFoundException;
 import propertyrental.platform.moderation.api.dto.request.CreateReportStatusRequest;
 import propertyrental.platform.moderation.domain.ReportStatusAlreadyExistsException;
+import propertyrental.platform.moderation.api.dto.request.UpdateReportStatusRequest;
 
 @WebMvcTest(ReportStatusController.class)
 class ReportStatusControllerTest {
 
+    private static final String UPDATE_BODY = "{\"code\":\"TEMP\",\"name\":\"Temp Status 2\"}";
+    private static final String UPDATE_BLANK_CODE_BODY = "{\"code\":\"\",\"name\":\"Temp Status 2\"}";
     private static final String CREATE_BODY = "{\"code\":\"TEMP\",\"name\":\"Temp Status\"}";
     private static final String CREATE_BLANK_CODE_BODY = "{\"code\":\"\",\"name\":\"Temp Status\"}";
     private static final String CREATE_LONG_CODE_BODY = "{\"code\":\"" + "A".repeat(51) + "\",\"name\":\"Temp Status\"}";
@@ -140,6 +146,56 @@ class ReportStatusControllerTest {
         mockMvc.perform(post("/api/v1/report-statuses")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(CREATE_BODY))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Report status already exists"));
+    }
+
+    // ---- update ----
+    @Test
+    void updateReturns200WithUpdatedReportStatus() throws Exception {
+        when(reportStatusService.updateReportStatus(eq(5L), any(UpdateReportStatusRequest.class)))
+                .thenReturn(new ReportStatusResponse(5L, "TEMP", "Temp Status 2"));
+
+        mockMvc.perform(put("/api/v1/report-statuses/5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(UPDATE_BODY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(5))
+                .andExpect(jsonPath("$.code").value("TEMP"))
+                .andExpect(jsonPath("$.name").value("Temp Status 2"));
+    }
+
+    @Test
+    void updateReturns400WhenBodyIsInvalid() throws Exception {
+        mockMvc.perform(put("/api/v1/report-statuses/5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(UPDATE_BLANK_CODE_BODY))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.code").exists());
+
+        verifyNoInteractions(reportStatusService);
+    }
+
+    @Test
+    void updateReturns404WhenNotFound() throws Exception {
+        when(reportStatusService.updateReportStatus(eq(99L), any(UpdateReportStatusRequest.class)))
+                .thenThrow(new ReportStatusNotFoundException(99L));
+
+        mockMvc.perform(put("/api/v1/report-statuses/99")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(UPDATE_BODY))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Report status not found"));
+    }
+
+    @Test
+    void updateReturns409WhenCodeOrNameBelongsToAnotherReportStatus() throws Exception {
+        when(reportStatusService.updateReportStatus(eq(5L), any(UpdateReportStatusRequest.class)))
+                .thenThrow(new ReportStatusAlreadyExistsException("code", "OPEN"));
+
+        mockMvc.perform(put("/api/v1/report-statuses/5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(UPDATE_BODY))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("Report status already exists"));
     }
