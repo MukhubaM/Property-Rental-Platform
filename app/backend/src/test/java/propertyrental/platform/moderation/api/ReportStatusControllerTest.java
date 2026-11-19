@@ -1,11 +1,12 @@
 package propertyrental.platform.moderation.api;
 
-import static org.mockito.Mockito.when;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
 import java.util.List;
 
@@ -14,9 +15,8 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.ArgumentMatchers.eq;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +31,7 @@ import propertyrental.platform.moderation.domain.ReportStatusNotFoundException;
 import propertyrental.platform.moderation.api.dto.request.CreateReportStatusRequest;
 import propertyrental.platform.moderation.domain.ReportStatusAlreadyExistsException;
 import propertyrental.platform.moderation.api.dto.request.UpdateReportStatusRequest;
+import propertyrental.platform.moderation.domain.ReportStatusInUseException;
 
 @WebMvcTest(ReportStatusController.class)
 class ReportStatusControllerTest {
@@ -198,5 +199,33 @@ class ReportStatusControllerTest {
                         .content(UPDATE_BODY))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("Report status already exists"));
+    }
+
+    // ---- delete ----
+    @Test
+    void deleteReturns204WithNoBody() throws Exception {
+        mockMvc.perform(delete("/api/v1/report-statuses/5"))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    void deleteReturns404WhenNotFound() throws Exception {
+        doThrow(new ReportStatusNotFoundException(99L))
+                .when(reportStatusService).deleteReportStatus(99L);
+
+        mockMvc.perform(delete("/api/v1/report-statuses/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Report status not found"));
+    }
+
+    @Test
+    void deleteReturns409WhenReportStatusIsInUse() throws Exception {
+        doThrow(new ReportStatusInUseException(1L))
+                .when(reportStatusService).deleteReportStatus(1L);
+
+        mockMvc.perform(delete("/api/v1/report-statuses/1"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Report status in use"));
     }
 }

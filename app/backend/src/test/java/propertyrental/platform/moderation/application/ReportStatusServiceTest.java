@@ -14,6 +14,9 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doThrow;
+
+import org.springframework.dao.DataIntegrityViolationException;
 
 import propertyrental.platform.moderation.api.dto.response.ReportStatusResponse;
 import propertyrental.platform.moderation.application.mapper.ReportStatusMapper;
@@ -24,6 +27,7 @@ import propertyrental.platform.moderation.infrastructure.persistence.repository.
 import propertyrental.platform.moderation.api.dto.request.CreateReportStatusRequest;
 import propertyrental.platform.moderation.domain.ReportStatusAlreadyExistsException;
 import propertyrental.platform.moderation.api.dto.request.UpdateReportStatusRequest;
+import propertyrental.platform.moderation.domain.ReportStatusInUseException;
 
 class ReportStatusServiceTest {
 
@@ -156,5 +160,37 @@ class ReportStatusServiceTest {
                 .isInstanceOf(ReportStatusAlreadyExistsException.class)
                 .hasMessageContaining("name");
         verify(repository, never()).save(any());
+    }
+
+    // ---- delete ----
+    @Test
+    void deleteRemovesExistingReportStatus() {
+        ReportStatusEntity entity = reportStatus(5L, "TEMP", "Temp Status");
+        when(repository.findById(5L)).thenReturn(Optional.of(entity));
+
+        service.deleteReportStatus(5L);
+
+        verify(repository).delete(entity);
+    }
+
+    @Test
+    void deleteThrowsWhenNotFound() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.deleteReportStatus(99L))
+                .isInstanceOf(ReportStatusNotFoundException.class)
+                .hasMessageContaining("99");
+        verify(repository, never()).delete(any());
+    }
+
+    @Test
+    void deleteThrowsWhenReportStatusIsStillUsedByListingReports() {
+        when(repository.findById(1L)).thenReturn(Optional.of(reportStatus(1L, "OPEN", "Open")));
+        doThrow(new DataIntegrityViolationException("fk_listing_reports_status"))
+                .when(repository).flush();
+
+        assertThatThrownBy(() -> service.deleteReportStatus(1L))
+                .isInstanceOf(ReportStatusInUseException.class)
+                .hasMessageContaining("1");
     }
 }

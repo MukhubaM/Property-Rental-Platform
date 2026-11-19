@@ -15,6 +15,7 @@ import propertyrental.platform.moderation.domain.ReportReasonInUseException;
 import propertyrental.platform.moderation.domain.ReportReasonNotFoundException;
 import propertyrental.platform.moderation.domain.ReportStatusNotFoundException;
 import propertyrental.platform.moderation.domain.ReportStatusAlreadyExistsException;
+import propertyrental.platform.moderation.domain.ReportStatusInUseException;
 
 @RestControllerAdvice(basePackageClasses = ModerationExceptionHandler.class)
 public class ModerationExceptionHandler {
@@ -85,6 +86,15 @@ public class ModerationExceptionHandler {
     public ProblemDetail handleReportStatusAlreadyExists(ReportStatusAlreadyExistsException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Report status already exists");
+
+        return problem;
+    }
+
+    // 409 (if the report status is still used by listing reports, it can't be deleted)
+    @ExceptionHandler(ReportStatusInUseException.class)
+    public ProblemDetail handleReportStatusInUse(ReportStatusInUseException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Report status in use");
 
         return problem;
     }

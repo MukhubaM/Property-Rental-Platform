@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import propertyrental.platform.moderation.api.dto.response.ReportStatusResponse;
 import propertyrental.platform.moderation.application.mapper.ReportStatusMapper;
@@ -15,6 +16,7 @@ import propertyrental.platform.moderation.api.dto.request.CreateReportStatusRequ
 import propertyrental.platform.moderation.domain.ReportStatusAlreadyExistsException;
 import propertyrental.platform.moderation.infrastructure.persistence.entity.ReportStatusEntity;
 import propertyrental.platform.moderation.api.dto.request.UpdateReportStatusRequest;
+import propertyrental.platform.moderation.domain.ReportStatusInUseException;
 
 @Service
 @RequiredArgsConstructor
@@ -76,5 +78,20 @@ public class ReportStatusService {
         reportStatusMapper.updateEntity(reportStatus, request);
 
         return reportStatusMapper.toResponse(reportStatusRepository.save(reportStatus));
+    }
+
+    @Transactional
+    public void deleteReportStatus(Long id) {
+
+        //This method load the report status to delete or fail with 404 if the id doesn't exist
+        ReportStatusEntity reportStatus = reportStatusRepository.findById(id)
+                .orElseThrow(() -> new ReportStatusNotFoundException(id));
+
+        try {
+            reportStatusRepository.delete(reportStatus);
+            reportStatusRepository.flush();
+        } catch (DataIntegrityViolationException ex) {
+            throw new ReportStatusInUseException(id);
+        }
     }
 }

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import propertyrental.platform.moderation.api.dto.response.ReportStatusResponse;
 import propertyrental.platform.moderation.application.service.ReportStatusService;
@@ -55,6 +56,12 @@ public class ReportStatusController {
                                                    UpdateReportStatusRequest request) {
 
         return reportStatusService.updateReportStatus(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteReportStatus(@PathVariable("id") Long id) {
+        reportStatusService.deleteReportStatus(id);
     }
 }
 
