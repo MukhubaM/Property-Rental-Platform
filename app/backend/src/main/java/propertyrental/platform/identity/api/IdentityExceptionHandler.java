@@ -6,8 +6,10 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 import propertyrental.platform.identity.domain.RoleAlreadyExistsException;
 import propertyrental.platform.identity.domain.RoleNotFoundException;
+import propertyrental.platform.identity.domain.RoleInUseException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -15,7 +17,7 @@ import java.util.Map;
 @RestControllerAdvice(basePackageClasses = IdentityExceptionHandler.class)
 public class IdentityExceptionHandler {
 
-    // 404: the requested role id doesn't exist
+    // 404 (if the requested role id doesn't exist)
     @ExceptionHandler(RoleNotFoundException.class)
     public ProblemDetail handleRoleNotFound(RoleNotFoundException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
@@ -24,7 +26,7 @@ public class IdentityExceptionHandler {
         return problem;
     }
 
-    //409: another role already uses this code or name
+    //409 (if another role already uses this code or name)
     @ExceptionHandler(RoleAlreadyExistsException.class)
     public ProblemDetail handleRoleAlreadyExists(RoleAlreadyExistsException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
@@ -33,7 +35,7 @@ public class IdentityExceptionHandler {
         return problem;
     }
 
-    //409: fallback when the database unique constraint catches a duplicate the service check missed
+    //409 (this fallback when the database unique constraint catches a duplicate the service check missed)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
@@ -43,7 +45,7 @@ public class IdentityExceptionHandler {
         return problem;
     }
 
-    // 400: when the request body failed validation (blank or too long fields)
+    // 400 (when the request body failed validation (blank or too long fields))
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new LinkedHashMap<>();
@@ -54,6 +56,15 @@ public class IdentityExceptionHandler {
                 HttpStatus.BAD_REQUEST, "Request validation failed");
         problem.setTitle("Invalid request");
         problem.setProperty("errors", errors);
+
+        return problem;
+    }
+
+    // 409 (the role is still assigned to users, so it can't be deleted)
+    @ExceptionHandler(RoleInUseException.class)
+    public ProblemDetail handleRoleInUse(RoleInUseException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Role in use");
 
         return problem;
     }

@@ -8,12 +8,16 @@ import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import propertyrental.platform.identity.api.dto.request.UpdateRoleRequest;
 import propertyrental.platform.identity.api.dto.response.RoleResponse;
@@ -42,9 +46,8 @@ public class RoleController {
     }
 
     @GetMapping("/{id}")
-    @Operation(
-            summary = "Get role by ID",
-            description = "Retrieves a specific platform role using its unique identifier."
+    @Operation(summary = "Get role by ID",
+              description = "Retrieves a specific platform role using its unique identifier."
     )
     public RoleResponse getRoleById(@PathVariable("id") Long id) {
         return roleService.getRoleById(id);
@@ -60,5 +63,11 @@ public class RoleController {
             @Valid @RequestBody UpdateRoleRequest request
     ) {
         return roleService.updateRole(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteRole(@PathVariable("id") Long id) {
+        roleService.deleteRole(id);
     }
 }
