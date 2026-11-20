@@ -18,10 +18,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.PostMapping;
+
 
 import propertyrental.platform.identity.api.dto.request.UpdateRoleRequest;
 import propertyrental.platform.identity.api.dto.response.RoleResponse;
 import propertyrental.platform.identity.application.service.RoleService;
+import propertyrental.platform.identity.api.dto.request.CreateRoleRequest;
 
 import java.util.List;
 
@@ -50,18 +53,21 @@ public class RoleController {
               description = "Retrieves a specific platform role using its unique identifier."
     )
     public RoleResponse getRoleById(@PathVariable("id") Long id) {
+
         return roleService.getRoleById(id);
     }
 
     @PutMapping("/{id}")
-    @Operation(
-            summary = "Update a role",
-            description = "Updates the information of an existing platform role identified by its ID using the details provided in the request body."
+    @Operation(summary = "Update a role",
+               description = "Updates the information of an existing platform role identified by its ID using the details provided in the request body."
     )
     public RoleResponse updateRole(
-            @PathVariable("id") Long id,
-            @Valid @RequestBody UpdateRoleRequest request
+            @PathVariable("id")
+            Long id,
+            @Valid @RequestBody
+            UpdateRoleRequest request
     ) {
+
         return roleService.updateRole(id, request);
     }
 
@@ -69,5 +75,12 @@ public class RoleController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteRole(@PathVariable("id") Long id) {
         roleService.deleteRole(id);
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public RoleResponse createRole(@Valid @RequestBody CreateRoleRequest request) {
+
+        return roleService.createRole(request);
     }
 }

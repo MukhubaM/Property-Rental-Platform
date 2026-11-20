@@ -22,6 +22,8 @@ import propertyrental.platform.identity.domain.RoleNotFoundException;
 import propertyrental.platform.identity.infrastructure.persistence.entity.RoleEntity;
 import propertyrental.platform.identity.infrastructure.persistence.repository.RoleRepository;
 import propertyrental.platform.identity.domain.RoleInUseException;
+import propertyrental.platform.identity.api.dto.request.CreateRoleRequest;
+import propertyrental.platform.identity.domain.RoleAlreadyExistsException;
 
 class RoleServiceTest {
 
@@ -47,6 +49,41 @@ class RoleServiceTest {
         assertThatThrownBy(() -> roleService.getRoleById(99L))
                 .isInstanceOf(RoleNotFoundException.class)
                 .hasMessageContaining("99");
+    }
+
+    // ---- create ----
+    @Test
+    void createSavesAndReturnsNewRole() {
+        when(roleRepository.save(any(RoleEntity.class))).thenAnswer(invocation -> {
+            RoleEntity saved = invocation.getArgument(0);
+            saved.setId(10L);
+
+            return saved;
+        });
+
+        RoleResponse response = roleService.createRole(new CreateRoleRequest("TEMP", "Temp Role"));
+
+        assertThat(response).isEqualTo(new RoleResponse(10L, "TEMP", "Temp Role"));
+    }
+
+    @Test
+    void createThrowsWhenCodeAlreadyExists() {
+        when(roleRepository.existsByCode("TENANT")).thenReturn(true);
+
+        assertThatThrownBy(() -> roleService.createRole(new CreateRoleRequest("TENANT", "Another")))
+                .isInstanceOf(RoleAlreadyExistsException.class)
+                .hasMessageContaining("code");
+        verify(roleRepository, never()).save(any());
+    }
+
+    @Test
+    void createThrowsWhenNameAlreadyExists() {
+        when(roleRepository.existsByName("Tenant")).thenReturn(true);
+
+        assertThatThrownBy(() -> roleService.createRole(new CreateRoleRequest("NEW_CODE", "Tenant")))
+                .isInstanceOf(RoleAlreadyExistsException.class)
+                .hasMessageContaining("name");
+        verify(roleRepository, never()).save(any());
     }
 
     // ---- delete ----

@@ -16,7 +16,7 @@ import propertyrental.platform.identity.domain.RoleNotFoundException;
 import propertyrental.platform.identity.infrastructure.persistence.entity.RoleEntity;
 import propertyrental.platform.identity.infrastructure.persistence.repository.RoleRepository;
 import propertyrental.platform.identity.domain.RoleInUseException;
-import propertyrental.platform.identity.infrastructure.persistence.entity.RoleEntity;
+import propertyrental.platform.identity.api.dto.request.CreateRoleRequest;
 
 import java.util.List;
 
@@ -28,6 +28,7 @@ public class RoleService {
     private final RoleMapper roleMapper;
 
     public List<RoleResponse> getAllRoles(){
+
         return roleRepository.findAll().stream()
                 .map(roleMapper::toResponse)
                 .toList();
@@ -74,5 +75,21 @@ public class RoleService {
         } catch (DataIntegrityViolationException ex) {
             throw new RoleInUseException(id);
         }
+    }
+
+    @Transactional
+    public RoleResponse createRole(CreateRoleRequest request) {
+
+        // This reject the request (409) if the code or name is already taken
+        if (roleRepository.existsByCode(request.code())) {
+            throw new RoleAlreadyExistsException("code", request.code());
+        }
+        if (roleRepository.existsByName(request.name())) {
+            throw new RoleAlreadyExistsException("name", request.name());
+        }
+
+        RoleEntity saved = roleRepository.save(roleMapper.toEntity(request));
+
+        return roleMapper.toResponse(saved);
     }
 }
