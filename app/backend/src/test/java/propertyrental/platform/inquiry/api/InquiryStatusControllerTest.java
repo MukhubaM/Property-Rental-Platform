@@ -1,14 +1,21 @@
 package propertyrental.platform.inquiry.api;
 
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyNoInteractions;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+
+import org.springframework.http.MediaType;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -18,9 +25,15 @@ import propertyrental.platform.inquiry.api.controller.InquiryStatusController;
 import propertyrental.platform.inquiry.api.dto.response.InquiryStatusResponse;
 import propertyrental.platform.inquiry.application.service.InquiryStatusService;
 import propertyrental.platform.inquiry.domain.InquiryStatusNotFoundException;
+import propertyrental.platform.inquiry.api.dto.request.CreateInquiryStatusRequest;
+import propertyrental.platform.inquiry.domain.InquiryStatusAlreadyExistsException;
 
 @WebMvcTest(InquiryStatusController.class)
 class InquiryStatusControllerTest {
+
+    private static final String CREATE_BODY = "{\"code\":\"TEMP\",\"name\":\"Temp Status\"}";
+    private static final String CREATE_BLANK_CODE_BODY = "{\"code\":\"\",\"name\":\"Temp Status\"}";
+    private static final String CREATE_LONG_CODE_BODY = "{\"code\":\"" + "A".repeat(51) + "\",\"name\":\"Temp Status\"}";
 
     @Autowired
     private MockMvc mockMvc;
@@ -80,5 +93,54 @@ class InquiryStatusControllerTest {
     void getByIdReturns400WhenIdIsNotANumber() throws Exception {
         mockMvc.perform(get("/api/v1/inquiry-statuses/abc"))
                 .andExpect(status().isBadRequest());
+    }
+
+    // ---- create ----
+    @Test
+    void createReturns201WithCreatedInquiryStatus() throws Exception {
+        when(inquiryStatusService.createInquiryStatus(any(CreateInquiryStatusRequest.class)))
+                .thenReturn(new InquiryStatusResponse(5L, "TEMP", "Temp Status"));
+
+        mockMvc.perform(post("/api/v1/inquiry-statuses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CREATE_BODY))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(5))
+                .andExpect(jsonPath("$.code").value("TEMP"))
+                .andExpect(jsonPath("$.name").value("Temp Status"));
+    }
+
+    @Test
+    void createReturns400WhenCodeIsBlank() throws Exception {
+        mockMvc.perform(post("/api/v1/inquiry-statuses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CREATE_BLANK_CODE_BODY))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.code").exists());
+
+        verifyNoInteractions(inquiryStatusService);
+    }
+
+    @Test
+    void createReturns400WhenCodeIsTooLong() throws Exception {
+        mockMvc.perform(post("/api/v1/inquiry-statuses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CREATE_LONG_CODE_BODY))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.code").exists());
+
+        verifyNoInteractions(inquiryStatusService);
+    }
+
+    @Test
+    void createReturns409WhenCodeOrNameAlreadyExists() throws Exception {
+        when(inquiryStatusService.createInquiryStatus(any(CreateInquiryStatusRequest.class)))
+                .thenThrow(new InquiryStatusAlreadyExistsException("code", "TEMP"));
+
+        mockMvc.perform(post("/api/v1/inquiry-statuses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CREATE_BODY))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Inquiry status already exists"));
     }
 }
