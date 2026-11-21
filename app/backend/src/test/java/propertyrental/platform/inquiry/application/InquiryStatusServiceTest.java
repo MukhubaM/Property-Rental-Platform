@@ -21,6 +21,7 @@ import propertyrental.platform.inquiry.infrastructure.persistence.entity.Inquiry
 import propertyrental.platform.inquiry.infrastructure.persistence.repository.InquiryStatusRepository;
 import propertyrental.platform.inquiry.api.dto.request.CreateInquiryStatusRequest;
 import propertyrental.platform.inquiry.domain.InquiryStatusAlreadyExistsException;
+import propertyrental.platform.inquiry.api.dto.request.UpdateInquiryStatusRequest;
 
 class InquiryStatusServiceTest {
 
@@ -102,6 +103,61 @@ class InquiryStatusServiceTest {
         when(repository.existsByName("New")).thenReturn(true);
 
         assertThatThrownBy(() -> service.createInquiryStatus(new CreateInquiryStatusRequest("NEW_CODE", "New")))
+                .isInstanceOf(InquiryStatusAlreadyExistsException.class)
+                .hasMessageContaining("name");
+        verify(repository, never()).save(any());
+    }
+
+    // ---- update ----
+    private InquiryStatusEntity updateTarget() {
+        InquiryStatusEntity entity = new InquiryStatusEntity();
+        entity.setId(5L);
+        entity.setCode("TEMP");
+        entity.setName("Temp Status");
+
+        return entity;
+    }
+
+    @Test
+    void updateSavesAndReturnsUpdatedInquiryStatus() {
+        InquiryStatusEntity entity = updateTarget();
+        when(repository.findById(5L)).thenReturn(Optional.of(entity));
+        when(repository.save(entity)).thenReturn(entity);
+
+        InquiryStatusResponse response = service.updateInquiryStatus(
+                5L, new UpdateInquiryStatusRequest("TEMP", "Temp Status 2"));
+
+        assertThat(response).isEqualTo(new InquiryStatusResponse(5L, "TEMP", "Temp Status 2"));
+    }
+
+    @Test
+    void updateThrowsWhenNotFound() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.updateInquiryStatus(99L, new UpdateInquiryStatusRequest("X", "Y")))
+                .isInstanceOf(InquiryStatusNotFoundException.class);
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void updateThrowsWhenCodeBelongsToAnotherInquiryStatus() {
+        when(repository.findById(5L)).thenReturn(Optional.of(updateTarget()));
+        when(repository.existsByCodeAndIdNot("NEW", 5L)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.updateInquiryStatus(
+                5L, new UpdateInquiryStatusRequest("NEW", "Temp Status")))
+                .isInstanceOf(InquiryStatusAlreadyExistsException.class)
+                .hasMessageContaining("code");
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void updateThrowsWhenNameBelongsToAnotherInquiryStatus() {
+        when(repository.findById(5L)).thenReturn(Optional.of(updateTarget()));
+        when(repository.existsByNameAndIdNot("New", 5L)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.updateInquiryStatus(
+                5L, new UpdateInquiryStatusRequest("TEMP", "New")))
                 .isInstanceOf(InquiryStatusAlreadyExistsException.class)
                 .hasMessageContaining("name");
         verify(repository, never()).save(any());

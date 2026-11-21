@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import propertyrental.platform.inquiry.api.dto.response.InquiryStatusResponse;
 import propertyrental.platform.inquiry.infrastructure.persistence.entity.InquiryStatusEntity;
 import propertyrental.platform.inquiry.api.dto.request.CreateInquiryStatusRequest;
+import propertyrental.platform.inquiry.api.dto.request.UpdateInquiryStatusRequest;
 
 @Component
 public class InquiryStatusMapper {
@@ -26,5 +27,11 @@ public class InquiryStatusMapper {
         inquiryStatus.setName(request.name());
 
         return inquiryStatus;
+    }
+
+    // This applies an update request to an existing entity in place
+    public void updateEntity(InquiryStatusEntity inquiryStatus, UpdateInquiryStatusRequest request) {
+        inquiryStatus.setCode(request.code());
+        inquiryStatus.setName(request.name());
     }
 }

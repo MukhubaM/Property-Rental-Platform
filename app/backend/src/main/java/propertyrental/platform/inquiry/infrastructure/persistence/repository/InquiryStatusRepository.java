@@ -12,4 +12,7 @@ public interface InquiryStatusRepository extends JpaRepository<InquiryStatusEnti
     boolean existsByCode(String code);
     boolean existsByName(String name);
 
+    // This method is used by update to check if the code or name is taken by a different inquiry status
+    boolean existsByCodeAndIdNot(String code, Long id);
+    boolean existsByNameAndIdNot(String name, Long id);
 }
