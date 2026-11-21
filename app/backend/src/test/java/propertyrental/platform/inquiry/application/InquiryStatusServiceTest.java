@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +19,8 @@ import propertyrental.platform.inquiry.application.service.InquiryStatusService;
 import propertyrental.platform.inquiry.domain.InquiryStatusNotFoundException;
 import propertyrental.platform.inquiry.infrastructure.persistence.entity.InquiryStatusEntity;
 import propertyrental.platform.inquiry.infrastructure.persistence.repository.InquiryStatusRepository;
+import propertyrental.platform.inquiry.api.dto.request.CreateInquiryStatusRequest;
+import propertyrental.platform.inquiry.domain.InquiryStatusAlreadyExistsException;
 
 class InquiryStatusServiceTest {
 
@@ -65,5 +70,40 @@ class InquiryStatusServiceTest {
         assertThatThrownBy(() -> service.getInquiryStatusById(99L))
                 .isInstanceOf(InquiryStatusNotFoundException.class)
                 .hasMessageContaining("99");
+    }
+
+    // ---- create ----
+    @Test
+    void createSavesAndReturnsNewInquiryStatus() {
+        when(repository.save(any(InquiryStatusEntity.class))).thenAnswer(invocation -> {
+            InquiryStatusEntity saved = invocation.getArgument(0);
+            saved.setId(5L);
+            return saved;
+        });
+
+        InquiryStatusResponse response = service.createInquiryStatus(
+                new CreateInquiryStatusRequest("TEMP", "Temp Status"));
+
+        assertThat(response).isEqualTo(new InquiryStatusResponse(5L, "TEMP", "Temp Status"));
+    }
+
+    @Test
+    void createThrowsWhenCodeAlreadyExists() {
+        when(repository.existsByCode("NEW")).thenReturn(true);
+
+        assertThatThrownBy(() -> service.createInquiryStatus(new CreateInquiryStatusRequest("NEW", "Other")))
+                .isInstanceOf(InquiryStatusAlreadyExistsException.class)
+                .hasMessageContaining("code");
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void createThrowsWhenNameAlreadyExists() {
+        when(repository.existsByName("New")).thenReturn(true);
+
+        assertThatThrownBy(() -> service.createInquiryStatus(new CreateInquiryStatusRequest("NEW_CODE", "New")))
+                .isInstanceOf(InquiryStatusAlreadyExistsException.class)
+                .hasMessageContaining("name");
+        verify(repository, never()).save(any());
     }
 }

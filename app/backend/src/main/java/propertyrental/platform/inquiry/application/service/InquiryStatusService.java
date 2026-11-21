@@ -9,6 +9,9 @@ import propertyrental.platform.inquiry.api.dto.response.InquiryStatusResponse;
 import propertyrental.platform.inquiry.application.mapper.InquiryStatusMapper;
 import propertyrental.platform.inquiry.domain.InquiryStatusNotFoundException;
 import propertyrental.platform.inquiry.infrastructure.persistence.repository.InquiryStatusRepository;
+import propertyrental.platform.inquiry.api.dto.request.CreateInquiryStatusRequest;
+import propertyrental.platform.inquiry.domain.InquiryStatusAlreadyExistsException;
+import propertyrental.platform.inquiry.infrastructure.persistence.entity.InquiryStatusEntity;
 
 import java.util.List;
 
@@ -35,5 +38,21 @@ public class InquiryStatusService {
         return inquiryStatusRepository.findAll().stream()
                 .map(inquiryStatusMapper::toResponse)
                 .toList();
+    }
+
+    @Transactional
+    public InquiryStatusResponse createInquiryStatus(CreateInquiryStatusRequest request) {
+
+        // This reject the request (409) if the code or name is already taken
+        if (inquiryStatusRepository.existsByCode(request.code())) {
+            throw new InquiryStatusAlreadyExistsException("code", request.code());
+        }
+        if (inquiryStatusRepository.existsByName(request.name())) {
+            throw new InquiryStatusAlreadyExistsException("name", request.name());
+        }
+
+        InquiryStatusEntity saved = inquiryStatusRepository.save(inquiryStatusMapper.toEntity(request));
+
+        return inquiryStatusMapper.toResponse(saved);
     }
 }
