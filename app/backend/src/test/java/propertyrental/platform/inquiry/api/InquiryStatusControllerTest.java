@@ -2,6 +2,7 @@ package propertyrental.platform.inquiry.api;
 
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -9,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 import java.util.List;
 
@@ -27,6 +29,7 @@ import propertyrental.platform.inquiry.application.service.InquiryStatusService;
 import propertyrental.platform.inquiry.domain.InquiryStatusNotFoundException;
 import propertyrental.platform.inquiry.api.dto.request.CreateInquiryStatusRequest;
 import propertyrental.platform.inquiry.domain.InquiryStatusAlreadyExistsException;
+import propertyrental.platform.inquiry.api.dto.request.UpdateInquiryStatusRequest;
 
 @WebMvcTest(InquiryStatusController.class)
 class InquiryStatusControllerTest {
@@ -34,7 +37,8 @@ class InquiryStatusControllerTest {
     private static final String CREATE_BODY = "{\"code\":\"TEMP\",\"name\":\"Temp Status\"}";
     private static final String CREATE_BLANK_CODE_BODY = "{\"code\":\"\",\"name\":\"Temp Status\"}";
     private static final String CREATE_LONG_CODE_BODY = "{\"code\":\"" + "A".repeat(51) + "\",\"name\":\"Temp Status\"}";
-
+    private static final String UPDATE_BODY = "{\"code\":\"TEMP\",\"name\":\"Temp Status 2\"}";
+    private static final String UPDATE_BLANK_CODE_BODY = "{\"code\":\"\",\"name\":\"Temp Status 2\"}";
     @Autowired
     private MockMvc mockMvc;
 
@@ -140,6 +144,56 @@ class InquiryStatusControllerTest {
         mockMvc.perform(post("/api/v1/inquiry-statuses")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(CREATE_BODY))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Inquiry status already exists"));
+    }
+
+    // ---- update ----
+    @Test
+    void updateReturns200WithUpdatedInquiryStatus() throws Exception {
+        when(inquiryStatusService.updateInquiryStatus(eq(5L), any(UpdateInquiryStatusRequest.class)))
+                .thenReturn(new InquiryStatusResponse(5L, "TEMP", "Temp Status 2"));
+
+        mockMvc.perform(put("/api/v1/inquiry-statuses/5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(UPDATE_BODY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(5))
+                .andExpect(jsonPath("$.code").value("TEMP"))
+                .andExpect(jsonPath("$.name").value("Temp Status 2"));
+    }
+
+    @Test
+    void updateReturns400WhenBodyIsInvalid() throws Exception {
+        mockMvc.perform(put("/api/v1/inquiry-statuses/5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(UPDATE_BLANK_CODE_BODY))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.code").exists());
+
+        verifyNoInteractions(inquiryStatusService);
+    }
+
+    @Test
+    void updateReturns404WhenNotFound() throws Exception {
+        when(inquiryStatusService.updateInquiryStatus(eq(99L), any(UpdateInquiryStatusRequest.class)))
+                .thenThrow(new InquiryStatusNotFoundException(99L));
+
+        mockMvc.perform(put("/api/v1/inquiry-statuses/99")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(UPDATE_BODY))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Inquiry status not found"));
+    }
+
+    @Test
+    void updateReturns409WhenCodeOrNameBelongsToAnotherInquiryStatus() throws Exception {
+        when(inquiryStatusService.updateInquiryStatus(eq(5L), any(UpdateInquiryStatusRequest.class)))
+                .thenThrow(new InquiryStatusAlreadyExistsException("code", "NEW"));
+
+        mockMvc.perform(put("/api/v1/inquiry-statuses/5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(UPDATE_BODY))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("Inquiry status already exists"));
     }

@@ -12,6 +12,7 @@ import propertyrental.platform.inquiry.infrastructure.persistence.repository.Inq
 import propertyrental.platform.inquiry.api.dto.request.CreateInquiryStatusRequest;
 import propertyrental.platform.inquiry.domain.InquiryStatusAlreadyExistsException;
 import propertyrental.platform.inquiry.infrastructure.persistence.entity.InquiryStatusEntity;
+import propertyrental.platform.inquiry.api.dto.request.UpdateInquiryStatusRequest;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class InquiryStatusService {
     private final InquiryStatusRepository inquiryStatusRepository;
     private final InquiryStatusMapper inquiryStatusMapper;
 
-    // Return the inquiry status or fail with 404 if the id doesn't exist
+    // Returns the inquiry status or fail with 404 if the id doesn't exist
     @Transactional
     public InquiryStatusResponse getInquiryStatusById(Long id) {
 
@@ -31,7 +32,7 @@ public class InquiryStatusService {
                 .orElseThrow(() -> new InquiryStatusNotFoundException(id));
     }
 
-    // Return all inquiry statuses (an empty list if there are none)
+    // Returns all inquiry statuses (an empty list if there are none)
     @Transactional
     public List<InquiryStatusResponse> getAllInquiryStatuses() {
 
@@ -54,5 +55,26 @@ public class InquiryStatusService {
         InquiryStatusEntity saved = inquiryStatusRepository.save(inquiryStatusMapper.toEntity(request));
 
         return inquiryStatusMapper.toResponse(saved);
+    }
+
+    @Transactional
+    public InquiryStatusResponse updateInquiryStatus(Long id, UpdateInquiryStatusRequest request) {
+
+        // This loads the inquiry status to update or fail with 404 if the id doesn't exist
+        InquiryStatusEntity inquiryStatus = inquiryStatusRepository.findById(id)
+                .orElseThrow(() -> new InquiryStatusNotFoundException(id));
+
+        // This method rejects the update (409) if a different inquiry status already uses this code or name
+        if (inquiryStatusRepository.existsByCodeAndIdNot(request.code(), id)) {
+            throw new InquiryStatusAlreadyExistsException("code", request.code());
+        }
+        if (inquiryStatusRepository.existsByNameAndIdNot(request.name(), id)) {
+            throw new InquiryStatusAlreadyExistsException("name", request.name());
+        }
+
+        // This method applies the new values to the existing entity and save it
+        inquiryStatusMapper.updateEntity(inquiryStatus, request);
+
+        return inquiryStatusMapper.toResponse(inquiryStatusRepository.save(inquiryStatus));
     }
 }
