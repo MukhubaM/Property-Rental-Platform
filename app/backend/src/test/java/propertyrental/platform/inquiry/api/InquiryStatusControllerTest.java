@@ -4,6 +4,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.doThrow;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -11,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
 import java.util.List;
 
@@ -30,6 +32,7 @@ import propertyrental.platform.inquiry.domain.InquiryStatusNotFoundException;
 import propertyrental.platform.inquiry.api.dto.request.CreateInquiryStatusRequest;
 import propertyrental.platform.inquiry.domain.InquiryStatusAlreadyExistsException;
 import propertyrental.platform.inquiry.api.dto.request.UpdateInquiryStatusRequest;
+import propertyrental.platform.inquiry.domain.InquiryStatusInUseException;
 
 @WebMvcTest(InquiryStatusController.class)
 class InquiryStatusControllerTest {
@@ -196,5 +199,33 @@ class InquiryStatusControllerTest {
                         .content(UPDATE_BODY))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("Inquiry status already exists"));
+    }
+
+    // ---- delete ----
+    @Test
+    void deleteReturns204WithNoBody() throws Exception {
+        mockMvc.perform(delete("/api/v1/inquiry-statuses/5"))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    void deleteReturns404WhenNotFound() throws Exception {
+        doThrow(new InquiryStatusNotFoundException(99L))
+                .when(inquiryStatusService).deleteInquiryStatus(99L);
+
+        mockMvc.perform(delete("/api/v1/inquiry-statuses/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Inquiry status not found"));
+    }
+
+    @Test
+    void deleteReturns409WhenInquiryStatusIsInUse() throws Exception {
+        doThrow(new InquiryStatusInUseException(1L))
+                .when(inquiryStatusService).deleteInquiryStatus(1L);
+
+        mockMvc.perform(delete("/api/v1/inquiry-statuses/1"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Inquiry status in use"));
     }
 }

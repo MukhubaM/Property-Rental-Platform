@@ -7,6 +7,9 @@ import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doThrow;
+
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +25,7 @@ import propertyrental.platform.inquiry.infrastructure.persistence.repository.Inq
 import propertyrental.platform.inquiry.api.dto.request.CreateInquiryStatusRequest;
 import propertyrental.platform.inquiry.domain.InquiryStatusAlreadyExistsException;
 import propertyrental.platform.inquiry.api.dto.request.UpdateInquiryStatusRequest;
+import propertyrental.platform.inquiry.domain.InquiryStatusInUseException;
 
 class InquiryStatusServiceTest {
 
@@ -161,5 +165,46 @@ class InquiryStatusServiceTest {
                 .isInstanceOf(InquiryStatusAlreadyExistsException.class)
                 .hasMessageContaining("name");
         verify(repository, never()).save(any());
+    }
+
+    // ---- delete ----
+    private InquiryStatusEntity deletableStatus(Long id, String code, String name) {
+        InquiryStatusEntity entity = new InquiryStatusEntity();
+        entity.setId(id);
+        entity.setCode(code);
+        entity.setName(name);
+
+        return entity;
+    }
+
+    @Test
+    void deleteRemovesExistingInquiryStatus() {
+        InquiryStatusEntity entity = deletableStatus(5L, "TEMP", "Temp Status");
+        when(repository.findById(5L)).thenReturn(Optional.of(entity));
+
+        service.deleteInquiryStatus(5L);
+
+        verify(repository).delete(entity);
+    }
+
+    @Test
+    void deleteThrowsWhenNotFound() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.deleteInquiryStatus(99L))
+                .isInstanceOf(InquiryStatusNotFoundException.class)
+                .hasMessageContaining("99");
+        verify(repository, never()).delete(any());
+    }
+
+    @Test
+    void deleteThrowsWhenInquiryStatusIsStillUsedByInquiries() {
+        when(repository.findById(1L)).thenReturn(Optional.of(deletableStatus(1L, "NEW", "New")));
+        doThrow(new DataIntegrityViolationException("fk_inquiries_status"))
+                .when(repository).flush();
+
+        assertThatThrownBy(() -> service.deleteInquiryStatus(1L))
+                .isInstanceOf(InquiryStatusInUseException.class)
+                .hasMessageContaining("1");
     }
 }
