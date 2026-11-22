@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import propertyrental.platform.inquiry.api.dto.response.InquiryStatusResponse;
 import propertyrental.platform.inquiry.application.mapper.InquiryStatusMapper;
@@ -13,6 +14,7 @@ import propertyrental.platform.inquiry.api.dto.request.CreateInquiryStatusReques
 import propertyrental.platform.inquiry.domain.InquiryStatusAlreadyExistsException;
 import propertyrental.platform.inquiry.infrastructure.persistence.entity.InquiryStatusEntity;
 import propertyrental.platform.inquiry.api.dto.request.UpdateInquiryStatusRequest;
+import propertyrental.platform.inquiry.domain.InquiryStatusInUseException;
 
 import java.util.List;
 
@@ -76,5 +78,20 @@ public class InquiryStatusService {
         inquiryStatusMapper.updateEntity(inquiryStatus, request);
 
         return inquiryStatusMapper.toResponse(inquiryStatusRepository.save(inquiryStatus));
+    }
+
+    @Transactional
+    public void deleteInquiryStatus(Long id) {
+
+        // This method load the inquiry status to delete or fail with 404 if the id doesn't exist
+        InquiryStatusEntity inquiryStatus = inquiryStatusRepository.findById(id)
+                .orElseThrow(() -> new InquiryStatusNotFoundException(id));
+
+        try {
+            inquiryStatusRepository.delete(inquiryStatus);
+            inquiryStatusRepository.flush();
+        } catch (DataIntegrityViolationException ex) {
+            throw new InquiryStatusInUseException(id);
+        }
     }
 }
