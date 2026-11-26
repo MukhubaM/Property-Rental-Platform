@@ -13,6 +13,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import propertyrental.platform.location.domain.ProvinceAlreadyExistsException;
 import propertyrental.platform.location.domain.ProvinceInUseException;
 import propertyrental.platform.location.domain.ProvinceNotFoundException;
+import propertyrental.platform.location.domain.CityAlreadyExistsException;
+import propertyrental.platform.location.domain.CityInUseException;
+import propertyrental.platform.location.domain.CityNotFoundException;
+import propertyrental.platform.location.domain.CityProvinceNotFoundException;
 
 @RestControllerAdvice(basePackageClasses = LocationExceptionHandler.class)
 public class LocationExceptionHandler {
@@ -47,9 +51,11 @@ public class LocationExceptionHandler {
     // 409 (this fallback when the database unique constraint catches a duplicate the service check missed)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+
+        // Detail text and title changed to neutral to be applied on city method since it was saying the code or name already exist when using the one for province
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                HttpStatus.CONFLICT, "A province with this code or name already exists");
-        problem.setTitle("Province already exists");
+                HttpStatus.CONFLICT, "A record with the same unique value already exists");
+        problem.setTitle("Duplicate record");
 
         return problem;
     }
@@ -65,6 +71,42 @@ public class LocationExceptionHandler {
                 HttpStatus.BAD_REQUEST, "Request validation failed");
         problem.setTitle("Invalid request");
         problem.setProperty("errors", errors);
+
+        return problem;
+    }
+
+    // 404 (the requested city id doesn't exist)
+    @ExceptionHandler(CityNotFoundException.class)
+    public ProblemDetail handleCityNotFound(CityNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("City not found");
+
+        return problem;
+    }
+
+    // 409 (another city in the province already uses this name)
+    @ExceptionHandler(CityAlreadyExistsException.class)
+    public ProblemDetail handleCityAlreadyExists(CityAlreadyExistsException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("City already exists");
+
+        return problem;
+    }
+
+    // 409 (the city is still used by suburbs or properties, so it can't be deleted)
+    @ExceptionHandler(CityInUseException.class)
+    public ProblemDetail handleCityInUse(CityInUseException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("City in use");
+
+        return problem;
+    }
+
+    // 400 (the request names a province that does not exist)
+    @ExceptionHandler(CityProvinceNotFoundException.class)
+    public ProblemDetail handleCityProvinceNotFound(CityProvinceNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Province does not exist");
 
         return problem;
     }
