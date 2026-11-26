@@ -17,6 +17,10 @@ import propertyrental.platform.location.domain.CityAlreadyExistsException;
 import propertyrental.platform.location.domain.CityInUseException;
 import propertyrental.platform.location.domain.CityNotFoundException;
 import propertyrental.platform.location.domain.CityProvinceNotFoundException;
+import propertyrental.platform.location.domain.SuburbAlreadyExistsException;
+import propertyrental.platform.location.domain.SuburbCityNotFoundException;
+import propertyrental.platform.location.domain.SuburbInUseException;
+import propertyrental.platform.location.domain.SuburbNotFoundException;
 
 @RestControllerAdvice(basePackageClasses = LocationExceptionHandler.class)
 public class LocationExceptionHandler {
@@ -75,7 +79,7 @@ public class LocationExceptionHandler {
         return problem;
     }
 
-    // 404 (the requested city id doesn't exist)
+    // 404 (if the requested city id doesn't exist)
     @ExceptionHandler(CityNotFoundException.class)
     public ProblemDetail handleCityNotFound(CityNotFoundException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
@@ -84,7 +88,7 @@ public class LocationExceptionHandler {
         return problem;
     }
 
-    // 409 (another city in the province already uses this name)
+    // 409 (if another city in the province already uses this name)
     @ExceptionHandler(CityAlreadyExistsException.class)
     public ProblemDetail handleCityAlreadyExists(CityAlreadyExistsException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
@@ -93,7 +97,7 @@ public class LocationExceptionHandler {
         return problem;
     }
 
-    // 409 (the city is still used by suburbs or properties, so it can't be deleted)
+    // 409 (if the city is still used by suburbs or properties, so it can't be deleted)
     @ExceptionHandler(CityInUseException.class)
     public ProblemDetail handleCityInUse(CityInUseException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
@@ -102,11 +106,47 @@ public class LocationExceptionHandler {
         return problem;
     }
 
-    // 400 (the request names a province that does not exist)
+    // 400 (if the request names a province that does not exist)
     @ExceptionHandler(CityProvinceNotFoundException.class)
     public ProblemDetail handleCityProvinceNotFound(CityProvinceNotFoundException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
         problem.setTitle("Province does not exist");
+
+        return problem;
+    }
+
+    // 404 (if the requested suburb id doesn't exist)
+    @ExceptionHandler(SuburbNotFoundException.class)
+    public ProblemDetail handleSuburbNotFound(SuburbNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Suburb not found");
+
+        return problem;
+    }
+
+    // 409 (another suburb in the city already uses this name)
+    @ExceptionHandler(SuburbAlreadyExistsException.class)
+    public ProblemDetail handleSuburbAlreadyExists(SuburbAlreadyExistsException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Suburb already exists");
+
+        return problem;
+    }
+
+    // 409 (if the suburb is still used by properties, so it can't be deleted)
+    @ExceptionHandler(SuburbInUseException.class)
+    public ProblemDetail handleSuburbInUse(SuburbInUseException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Suburb in use");
+
+        return problem;
+    }
+
+    // 400 (if the request names a city that does not exist)
+    @ExceptionHandler(SuburbCityNotFoundException.class)
+    public ProblemDetail handleSuburbCityNotFound(SuburbCityNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("City does not exist");
 
         return problem;
     }
